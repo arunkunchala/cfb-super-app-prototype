@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0B0C13">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CFB Super App">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<title>CFB Super App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Graduate&family=Big+Shoulders+Display:wght@600;700;800&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============ DESIGN TOKENS ============ */
+:root{
+  --bg:#0B0C13; --surface:#151724; --surface2:#1D2032; --line:#2A2E45;
+  --ink:#FFFFFF; --mut:#98A0B4; --dim:#5C6478;
+  --gold:#F5B400; --gold2:#FFD866; --green:#2FBF71; --red:#E4572E; --live:#FF3B30;
+  /* team theme (default: Ohio State) */
+  --team:#C9302C; --team-dk:#8E1F1C; --team-glow:rgba(201,48,44,.35);
+  --team2:#B0B7C3; --on-team:#FFFFFF;
+  --grad-team:linear-gradient(115deg,var(--team) 0%,var(--team-dk) 100%);
+  --grad-gold:linear-gradient(115deg,#FFD866,#F5B400 55%,#C98F00);
+  --varsity:'Graduate',serif; --display:'Big Shoulders Display','Oswald',sans-serif;
+  --score:'Oswald',sans-serif; --body:'Inter',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:#08080C;font-family:var(--body);color:var(--ink);overflow:hidden}
+body::before{content:"";position:fixed;inset:0;
+  background:repeating-linear-gradient(90deg,transparent 0 119px,rgba(255,255,255,.018) 119px 121px);pointer-events:none}
+
+/* ============ STAGE / DESKTOP CHROME ============ */
+.stage{display:flex;height:100vh;align-items:center;justify-content:center;gap:36px;padding:20px}
+.side{width:250px;max-height:92vh;overflow-y:auto;scrollbar-width:thin;flex:none}
+.side h1{font-family:var(--varsity);font-size:17px;color:var(--gold);letter-spacing:1px;line-height:1.35}
+.side .sub{font-size:11px;color:var(--dim);margin:6px 0 16px;line-height:1.5}
+.side .grp{font-family:var(--score);font-size:10.5px;font-weight:600;letter-spacing:2.5px;color:var(--dim);margin:14px 0 6px;text-transform:uppercase}
+.side a{display:block;font-size:12.5px;color:var(--mut);text-decoration:none;padding:5px 10px;border-radius:7px;cursor:pointer}
+.side a:hover{background:#15161F;color:#fff}
+.side a.on{background:#1C1E2B;color:var(--gold);font-weight:600}
+@media(max-width:900px){.side{display:none}.stage{padding:0}}
+
+/* ============ PHONE ============ */
+.phone{width:390px;height:844px;max-height:96vh;background:var(--bg);border-radius:44px;
+  box-shadow:0 0 0 10px #16161c,0 0 0 12px #2a2a33,0 40px 90px rgba(0,0,0,.7),0 0 140px -30px var(--team-glow);
+  position:relative;overflow:hidden;flex:none}
+@media(max-width:440px){.phone{width:100vw;height:100vh;max-height:100vh;border-radius:0;box-shadow:none}}
+.notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#000;border-radius:14px;z-index:60}
+.status{position:absolute;top:14px;left:26px;right:26px;display:flex;justify-content:space-between;font-size:12px;font-weight:700;z-index:55;pointer-events:none}
+.status .r{color:var(--mut);font-weight:500}
+
+/* ============ SCREENS ============ */
+.screen{position:absolute;inset:0;padding:52px 0 86px;overflow-y:auto;overflow-x:hidden;
+  background:
+    radial-gradient(140% 50% at 50% -10%, rgba(255,255,255,.045), transparent 60%),
+    repeating-linear-gradient(90deg, transparent 0 77px, rgba(255,255,255,.016) 77px 78px),
+    var(--bg);
+  display:none;scrollbar-width:none}
+.screen::-webkit-scrollbar{display:none}
+.screen.on{display:block;animation:in .22s ease}
+@keyframes in{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.screen.back-anim{animation:inL .22s ease}
+@keyframes inL{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.pad{padding:0 18px}
+
+/* headers — hero banner (game UI) */
+.hero{position:relative;margin:4px 0 12px;padding:16px 18px 20px;overflow:hidden;
+  background:
+    radial-gradient(130% 160% at 88% -30%, var(--team-glow), transparent 55%),
+    linear-gradient(115deg, var(--team-dk) 0%, rgba(0,0,0,0) 62%),
+    linear-gradient(180deg, #171927, #12131e);
+  border-bottom:1px solid var(--line);
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 14px),0 100%)}
+.hero::before{content:"";position:absolute;top:-10px;right:-22px;width:150px;height:170%;
+  background:repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 10px, transparent 10px 34px);
+  transform:skewX(-12deg);pointer-events:none}
+.hero .kick{display:inline-block;font-family:var(--score);font-size:10.5px;font-weight:700;letter-spacing:3px;
+  color:#171200;text-transform:uppercase;background:var(--grad-gold);padding:4px 12px;
+  transform:skewX(-8deg);box-shadow:2px 2px 0 rgba(0,0,0,.45)}
+.hero h2{font-family:var(--display);font-size:40px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.5px;line-height:.92;margin-top:11px;font-style:italic;
+  text-shadow:3px 3px 0 rgba(0,0,0,.45), 0 0 34px var(--team-glow)}
+.hero .sub{font-size:11.5px;color:var(--mut);margin-top:8px;font-weight:500}
+.subhdr{display:flex;align-items:center;gap:11px;padding:10px 18px 8px}
+.back{width:36px;height:36px;background:var(--surface2);border:1px solid var(--line);transform:skewX(-8deg);
+  display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff;cursor:pointer;flex:none;
+  box-shadow:2px 2px 0 rgba(0,0,0,.4)}
+.subhdr .t{font-family:var(--display);font-size:23px;font-weight:800;text-transform:uppercase;font-style:italic;letter-spacing:.5px}
+.subhdr .s{font-size:10.5px;color:var(--mut);margin-top:0}
+
+/* pennant strip — CFB flavor on hub headers */
+.pennants{display:flex;gap:6px;padding:10px 0 0}
+.pennants i{width:0;height:0;border-left:11px solid var(--team);border-top:8px solid transparent;border-bottom:8px solid transparent;filter:drop-shadow(1px 1px 0 rgba(0,0,0,.4))}
+.pennants i:nth-child(2n){border-left-color:var(--gold)}
+.pennants i:nth-child(3n){border-left-color:var(--team2);opacity:.6}
+
+/* field texture band — turf + yard lines */
+.field{background:
+  repeating-linear-gradient(90deg, transparent 0 30px, rgba(255,255,255,.07) 30px 32px),
+  repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 12px, transparent 12px 24px),
+  linear-gradient(160deg,#155232 0%, #0E3B22 55%, #0B2E1B 100%)!important;
+  border:1px solid #237848!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1), 0 0 26px -10px rgba(47,191,113,.5)!important}
+
+/* cards & rows — notched game panels */
+.card{background:linear-gradient(100deg,#191C2C,#141625 65%);border:1px solid var(--line);border-radius:4px;
+  padding:14px;margin:0 18px 11px;position:relative;
+  clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 6px 16px -8px rgba(0,0,0,.6)}
+.card::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,var(--line),transparent 60%)}
+.card.hi{background:
+    radial-gradient(120% 150% at 90% -30%, var(--team-glow), transparent 55%),
+    linear-gradient(100deg,#1C1F31,#151726 70%);
+  border-color:var(--team)}
+.card.hi::before{background:var(--grad-team);height:3px}
+.card.hi::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 42%,rgba(255,255,255,.09) 50%,transparent 58%);
+  background-size:260% 100%;animation:sheen 3.4s ease-in-out infinite}
+@keyframes sheen{0%{background-position:130% 0}55%{background-position:-70% 0}100%{background-position:-70% 0}}
+.card .k{font-family:var(--score);font-size:10px;font-weight:700;letter-spacing:2.4px;color:var(--mut);text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.card .k::before{content:"";width:13px;height:8px;background:var(--team);transform:skewX(-22deg);flex:none;box-shadow:1px 1px 0 rgba(0,0,0,.4)}
+.card .k.team{color:var(--team2)} .card .k.gold{color:var(--gold)} .card .k.gold::before{background:var(--grad-gold)}
+.card .k.red{color:var(--red)} .card .k.red::before{background:var(--red)}
+.card .k.green{color:var(--green)} .card .k.green::before{background:var(--green)}
+.card h3{font-family:var(--score);font-size:16.5px;font-weight:600;margin-top:5px;letter-spacing:.2px}
+.card p{font-size:11.5px;color:var(--mut);margin-top:4px;line-height:1.45}
+.tap{cursor:pointer;transition:transform .08s}
+.tap:active{transform:scale(.98)}
+.arrow{position:absolute;right:13px;top:50%;transform:translateY(-50%) skewX(-10deg);color:var(--gold);font-size:18px;font-weight:800}
+
+/* list rows */
+.rowi{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
+.rowi:last-child{border-bottom:none}
+.rowi .grow{flex:1;min-width:0}
+.rowi .t{font-size:13px;font-weight:700}
+.rowi .s{font-size:10.5px;color:var(--mut);margin-top:1px}
+
+/* avatars / crests */
+.av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--score);font-weight:700;font-size:13px;flex:none;border:2px solid rgba(255,255,255,.2);
+  box-shadow:0 3px 8px rgba(0,0,0,.5), inset 0 2px 3px rgba(255,255,255,.18)}
+.av.sm{width:30px;height:30px;font-size:10.5px}
+.av.lg{width:52px;height:52px;font-size:17px}
+
+/* chips & buttons */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;background:var(--surface2);
+  border:1px solid var(--line);font-family:var(--score);font-size:10.5px;font-weight:600;letter-spacing:1px;color:var(--mut);
+  cursor:pointer;white-space:nowrap;transform:skewX(-8deg);text-transform:uppercase;box-shadow:2px 2px 0 rgba(0,0,0,.35)}
+.chip.on{background:var(--grad-team);border-color:var(--team);color:var(--on-team)}
+.chip.gold{background:rgba(245,180,0,.12);border-color:rgba(245,180,0,.5);color:var(--gold)}
+.chiprow{display:flex;gap:9px;padding:8px 18px 10px;overflow-x:auto;scrollbar-width:none}
+.chiprow::-webkit-scrollbar{display:none}
+.btn{display:block;width:calc(100% - 36px);margin:10px 18px;padding:14px;border:none;
+  background:var(--grad-team);color:var(--on-team);font-family:var(--score);font-size:14.5px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;cursor:pointer;text-align:center;transition:transform .07s, box-shadow .07s;
+  transform:skewX(-8deg);font-style:italic;
+  box-shadow:0 4px 0 rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.2), 0 0 26px -8px var(--team-glow)}
+.btn:active{transform:skewX(-8deg) translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.5)}
+.btn.gold{background:var(--grad-gold);color:#171200;box-shadow:0 4px 0 rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5), 0 0 28px -6px rgba(245,180,0,.5)}
+.btn.ghost{background:var(--surface2);color:#fff;border:1px solid var(--line);box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.btn.inline{display:inline-block;width:auto;margin:0;padding:9px 18px;font-size:11.5px}
+.btn:disabled{opacity:.45;cursor:default}
+
+/* progress — striped XP bars */
+.bar{height:11px;background:#0A0B12;overflow:hidden;transform:skewX(-8deg);border:1px solid var(--line);box-shadow:inset 0 2px 4px rgba(0,0,0,.6)}
+.bar i{display:block;height:100%;background:
+    repeating-linear-gradient(-55deg, rgba(255,255,255,.22) 0 5px, transparent 5px 12px),
+    var(--grad-gold);
+  transition:width .5s ease;animation:march 1.6s linear infinite;background-size:24px 100%, 100% 100%}
+@keyframes march{to{background-position:24px 0, 0 0}}
+.bar.team i{background:repeating-linear-gradient(-55deg, rgba(255,255,255,.18) 0 5px, transparent 5px 12px), var(--grad-team);background-size:24px 100%, 100% 100%}
+.bar.green i{background:repeating-linear-gradient(-55deg, rgba(255,255,255,.18) 0 5px, transparent 5px 12px), linear-gradient(115deg,#43D98A,#1F9457);background-size:24px 100%, 100% 100%}
+.bar.red i{background:repeating-linear-gradient(-55deg, rgba(255,255,255,.18) 0 5px, transparent 5px 12px), linear-gradient(115deg,#F2764C,#C4401C);background-size:24px 100%, 100% 100%}
+
+/* score bug — broadcast style */
+.scorebug{display:flex;align-items:center;gap:8px;padding:9px 13px;position:relative;
+  background:linear-gradient(90deg,#04050A,#0E1120 55%,#04050A);
+  border:1px solid var(--line);border-left:5px solid var(--team);
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.scorebug .tm{display:flex;align-items:center;gap:6px;font-family:var(--score);font-weight:700;font-size:14px}
+.scorebug .pt{font-family:var(--display);font-weight:800;font-size:22px;color:var(--gold);font-style:italic;text-shadow:2px 2px 0 rgba(0,0,0,.5)}
+.scorebug .clk{margin-left:auto;text-align:right}
+.scorebug .clk b{font-family:var(--score);font-size:11.5px;color:#fff;display:block;letter-spacing:1px}
+.scorebug .clk span{font-size:8.5px;color:var(--gold);letter-spacing:1.5px;font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+
+/* stats — jumbotron tiles */
+.stat3{display:flex;gap:9px;margin:0 18px 11px}
+.stat3 .st{flex:1;background:linear-gradient(170deg,#1B1E30,#13141F);border:1px solid var(--line);padding:12px 8px;text-align:center;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.stat3 .st::before{content:"";position:absolute;top:0;left:0;width:38%;height:3px;background:var(--grad-gold)}
+.stat3 .v{font-family:var(--display);font-size:27px;font-weight:800;color:var(--gold);font-style:italic;text-shadow:2px 2px 0 rgba(0,0,0,.45)}
+.stat3 .l{font-family:var(--score);font-size:8.5px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px;font-weight:600}
+
+/* medals — trophy plates */
+.medals{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:4px 18px}
+.medal{background:linear-gradient(170deg,#1B1E30,#13141F);border:1px solid var(--line);padding:13px 6px;text-align:center;cursor:pointer;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.medal .ring{width:58px;height:58px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;
+  font-size:22px;position:relative;background:radial-gradient(circle at 35% 30%, #262a40, #12131d 70%);
+  box-shadow:0 0 16px -4px rgba(245,180,0,.25), inset 0 2px 3px rgba(255,255,255,.08)}
+.medal .t{font-family:var(--score);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.medal .s{font-size:8.5px;color:var(--mut);margin-top:2px}
+.medal.locked{opacity:.38;filter:grayscale(.8)}
+
+/* chat */
+.msg{display:flex;gap:9px;padding:7px 18px;align-items:flex-start}
+.msg .b{background:var(--surface);border:1px solid var(--line);border-radius:4px 14px 14px 14px;padding:8px 11px;font-size:12px;max-width:265px;line-height:1.4}
+.msg .u{font-size:10px;font-weight:700;margin-bottom:2px}
+.msg.obj .b{border-color:var(--gold);background:rgba(245,180,0,.07)}
+.composer{position:absolute;left:0;right:0;bottom:86px;display:flex;gap:8px;padding:10px 18px;background:linear-gradient(transparent,var(--bg) 30%)}
+.composer input{flex:1;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:11px 16px;color:#fff;font-size:12.5px;outline:none;font-family:var(--body)}
+.composer .send{width:42px;height:42px;border-radius:50%;background:var(--team);border:none;color:var(--on-team);font-size:15px;cursor:pointer;flex:none}
+
+/* tab bar — gamified */
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:82px;background:linear-gradient(180deg,rgba(9,10,16,.92),#07080D 40%);
+  backdrop-filter:blur(8px);border-top:1px solid var(--line);display:flex;z-index:50;padding-bottom:14px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--dim);position:relative}
+.tab .i{font-size:20px;line-height:1;transition:transform .15s, filter .15s}
+.tab .l{font-family:var(--score);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase}
+.tab.on{color:var(--gold)}
+.tab.on::before{content:"";position:absolute;top:0;width:36px;height:4px;background:var(--grad-gold);transform:skewX(-20deg);box-shadow:0 0 12px rgba(245,180,0,.6)}
+.tab.on .i{transform:translateY(-2px) scale(1.18);filter:drop-shadow(0 0 8px rgba(245,180,0,.55))}
+.tab.on .l{color:var(--gold)}
+
+/* live pill */
+.livepill{position:absolute;top:52px;left:50%;transform:translateX(-50%) skewX(-8deg);z-index:45;display:flex;align-items:center;gap:7px;
+  background:linear-gradient(90deg,#1A0505,#000 40%);border:1px solid var(--live);padding:7px 14px;cursor:pointer;
+  box-shadow:0 4px 18px rgba(255,59,48,.35), 2px 2px 0 rgba(0,0,0,.5)}
+.livepill .pulse{width:7px;height:7px;border-radius:50%;background:var(--live);animation:pul 1.2s infinite}
+@keyframes pul{50%{opacity:.3}}
+.livepill b{font-family:var(--score);font-size:11px;letter-spacing:.5px}
+
+/* toast + sheet + confetti */
+.toast{position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);
+  border:1px solid var(--gold);color:#fff;font-size:12px;font-weight:600;padding:10px 18px;border-radius:999px;opacity:0;
+  transition:.25s;z-index:70;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.sheet-mask{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:65;opacity:0;pointer-events:none;transition:.2s}
+.sheet-mask.show{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface2);border-radius:22px 22px 0 0;z-index:66;
+  transform:translateY(105%);transition:.28s cubic-bezier(.3,.9,.3,1);padding:14px 18px 30px;max-height:70%;overflow-y:auto}
+.sheet.show{transform:none}
+.sheet .grab{width:40px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 12px}
+.celebrate{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;flex-direction:column;
+  background:
+    repeating-conic-gradient(from 8deg at 50% 38%, rgba(245,180,0,.06) 0 9deg, transparent 9deg 24deg),
+    radial-gradient(90% 60% at 50% 35%, var(--team-glow), transparent 65%),
+    rgba(6,6,10,.93);
+  text-align:center;padding:40px}
+.celebrate.show{display:flex}
+.celebrate .big{font-size:74px;animation:pop .5s cubic-bezier(.2,1.6,.4,1);filter:drop-shadow(0 0 24px rgba(245,180,0,.5))}
+@keyframes pop{from{transform:scale(.2);opacity:0}}
+.celebrate h2{font-family:var(--display);font-size:32px;font-weight:800;font-style:italic;text-transform:uppercase;color:var(--gold);margin-top:12px;
+  text-shadow:3px 3px 0 rgba(0,0,0,.55);letter-spacing:.5px}
+.celebrate p{font-size:12.5px;color:#C9CFDD;margin-top:10px;max-width:270px;line-height:1.55}
+canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
+.celebrate .btn{margin-top:22px;z-index:82}
+
+/* misc */
+.sec{display:inline-block;font-family:var(--score);font-size:10.5px;font-weight:700;letter-spacing:2.5px;color:#fff;text-transform:uppercase;
+  margin:12px 18px 8px;padding:5px 15px;background:var(--grad-team);transform:skewX(-8deg);box-shadow:2px 2px 0 rgba(0,0,0,.45)}
+.timer{font-family:var(--display);font-weight:800;font-style:italic;font-size:15px}
+.timer.hot{color:var(--red);text-shadow:0 0 12px rgba(228,87,46,.5);animation:pul 1.2s infinite}
+.ovr{width:46px;height:58px;background:linear-gradient(155deg,#2A2418,#171308 60%,#241E10);border:1px solid rgba(245,180,0,.5);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;position:relative;
+  clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,0 100%);box-shadow:inset 0 1px 0 rgba(255,216,102,.25), 0 0 14px -4px rgba(245,180,0,.4)}
+.ovr::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,rgba(255,216,102,.15) 50%,transparent 60%);
+  background-size:240% 100%;animation:sheen 2.8s ease-in-out infinite;pointer-events:none}
+.ovr b{font-family:var(--display);font-size:19px;font-weight:800;font-style:italic;color:var(--gold2);text-shadow:1px 1px 0 rgba(0,0,0,.6)}
+.ovr span{font-size:7.5px;color:var(--mut);letter-spacing:1px;font-weight:700}
+.stars{color:var(--gold);font-size:11px;letter-spacing:1px}
+.flag{font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:.5px}
+.checkrow{display:flex;align-items:center;gap:9px;padding:8px 0;font-size:12px;border-bottom:1px dashed var(--line)}
+.checkrow:last-child{border:none}
+.ck{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;flex:none}
+.ck.done{background:var(--green);border-color:var(--green)}
+.storycard{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;padding:40px 30px;cursor:pointer}
+.storycard.on{display:flex}
+
+/* ============ MOBILE DEPLOY (auto-scale, safe areas) ============ */
+@media (max-width:768px), (pointer:coarse) and (max-width:1024px){
+  .stage{padding:0;gap:0}
+  .side{display:none}
+  .phone{width:100vw;height:100dvh;max-height:none;border-radius:0;box-shadow:none}
+  .notch{display:none}
+  .status{display:none}
+  .screen{padding-top:calc(env(safe-area-inset-top, 0px) + 10px);
+    padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
+  .tabbar{height:auto;padding-top:6px;padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px))}
+  .tab{padding:6px 0 2px}
+  .livepill{top:calc(env(safe-area-inset-top, 0px) + 10px)}
+  .composer{bottom:calc(88px + env(safe-area-inset-bottom, 0px))}
+  .toast{bottom:calc(104px + env(safe-area-inset-bottom, 0px))}
+  .hero h2{font-size:clamp(30px, 10.5vw, 44px)}
+  .celebrate h2{font-size:clamp(24px, 8.5vw, 34px)}
+  .stat3 .v{font-size:clamp(20px, 7vw, 28px)}
+  .btn{font-size:clamp(12.5px, 3.8vw, 15px)}
+}
+@media (min-width:769px) and (max-width:1100px){
+  .side{width:200px}
+}
+/* large phones / small tablets portrait: cap content width for readability */
+@media (pointer:coarse) and (min-width:520px) and (max-width:768px){
+  #screens .screen>*, .tabbar{max-width:520px;margin-left:auto;margin-right:auto}
+}
+@media (display-mode: standalone){
+  body{background:var(--bg)}
+}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="side">
+    <h1>CFB SUPER APP</h1>
+    <div class="sub">Clickable UX prototype · Liquidnitro × EA · Every section is navigable inside the phone. Use this map to jump.</div>
+    <div id="map"></div>
+  </div>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="status"><span id="clock">9:41</span><span class="r">5G · 100%</span></div>
+    <div class="livepill" id="livepill" onclick="go('matchday')" style="display:none">
+      <div class="pulse"></div><b>LIVE · OSU 21 – MICH 17 · Q3</b>
+    </div>
+    <div id="screens"><!--SCREENS--></div>
+    <div class="tabbar" id="tabbar"></div>
+    <div class="toast" id="toast"></div>
+    <div class="sheet-mask" id="sheetMask" onclick="closeSheet()"></div>
+    <div class="sheet" id="sheet"></div>
+    <div class="celebrate" id="celebrate">
+      <canvas id="confetti"></canvas>
+      <div class="big" id="celebEmoji">🏆</div>
+      <h2 id="celebTitle"></h2>
+      <p id="celebText"></p>
+      <button class="btn gold inline" onclick="hideCeleb()">LET'S GO</button>
+    </div>
+  </div>
+</div>
+<script>
+/* ================= STATE ================= */
+const S = {
+  streak: 9, claimed: false, coins: 182400, points: 3120,
+  hours: 23, hoursMax: 35, vauxHours: 8,
+  picks: {}, pickCount: 6, poll: null, bid: 47500, outbid: true,
+  checkedIn: false, gamesAttended: 47, wl: '33–14',
+  giftsSent: {}, ready: false, theme: 'osu',
+};
+const THEMES = {
+  osu:   { name:'Ohio State',  abbr:'OSU', team:'#C9302C', dk:'#8E1F1C', t2:'#B0B7C3', on:'#FFFFFF' },
+  mich:  { name:'Michigan',    abbr:'MICH',team:'#1B4B8F', dk:'#00274C', t2:'#FFCB05', on:'#FFFFFF' },
+  texas: { name:'Texas',       abbr:'TEX', team:'#BF5700', dk:'#8C3F00', t2:'#E8E2D6', on:'#FFFFFF' },
+  uga:   { name:'Georgia',     abbr:'UGA', team:'#BA0C2F', dk:'#7E0820', t2:'#C9CCD1', on:'#FFFFFF' },
+};
+function setTheme(k){
+  S.theme = k; const t = THEMES[k], r = document.documentElement.style;
+  r.setProperty('--team', t.team); r.setProperty('--team-dk', t.dk);
+  r.setProperty('--team2', t.t2); r.setProperty('--on-team', t.on);
+  r.setProperty('--team-glow', t.team + '59');
+  toast('Theme: ' + t.name);
+  if (cur === 'settings') render('settings');
+}
+
+/* ================= HELPERS ================= */
+const av = (txt, col, cls) => '<div class="av ' + (cls||'') + '" style="background:' + col + '">' + txt + '</div>';
+const bar = (pct, cls) => '<div class="bar ' + (cls||'') + '"><i style="width:' + pct + '%"></i></div>';
+const stars = n => '<span class="stars">' + '★'.repeat(n) + '<span style="opacity:.25">' + '★'.repeat(5-n) + '</span></span>';
+function bug(a, as, b, bs, clock, label){
+  return '<div class="scorebug"><div class="tm">' + av(a,'var(--team)','sm') + ' <span class="pt">' + as + '</span></div>' +
+  '<div style="color:var(--dim);font-size:10px">—</div>' +
+  '<div class="tm"><span class="pt">' + bs + '</span> ' + av(b,'#1B4B8F','sm') + '</div>' +
+  '<div class="clk"><b>' + clock + '</b><span>' + label + '</span></div></div>';
+}
+function hub(kick, title, sub){
+  return '<div class="hero"><div class="kick">' + kick + '</div><h2>' + title + '</h2>' +
+    (sub ? '<div class="sub">' + sub + '</div>' : '') +
+    '<div class="pennants">' + '<i></i>'.repeat(12) + '</div></div>';
+}
+function subhdr(backTo, title, sub){
+  return '<div class="subhdr"><div class="back" onclick="back()">‹</div><div><div class="t">' + title +
+    '</div><div class="s">' + (sub||'') + '</div></div></div>';
+}
+function card(opts){
+  return '<div class="card ' + (opts.cls||'') + (opts.go ? ' tap' : '') + '" ' +
+    (opts.go ? 'onclick="go(\'' + opts.go + '\')"' : '') + '>' +
+    (opts.k ? '<div class="k ' + (opts.kc||'') + '">' + opts.k + '</div>' : '') +
+    (opts.t ? '<h3>' + opts.t + '</h3>' : '') +
+    (opts.p ? '<p>' + opts.p + '</p>' : '') + (opts.body||'') +
+    (opts.go ? '<div class="arrow">›</div>' : '') + '</div>';
+}
+
+/* ================= SCREENS ================= */
+const SCREENS = {};
+const G = { home:'home', dynasty:'dynasty', cut:'cut', social:'social', you:'you' };
+
+/* ---------- HOME ---------- */
+SCREENS.home = { group:'home', label:'Home · Action Feed', html: () => {
+  const t = THEMES[S.theme];
+  return hub('SATURDAY · NOV 28 · RIVALRY WEEK', 'GAMEDAY, COACH', 'Ohio State Buckeyes · Chapter #214 · <b style="color:var(--gold)">🔥 ' + S.streak + '-week streak</b>')
+  + card({cls:'hi tap', k:'YOUR DYNASTY · WEEK 13 · ADVANCE LOCKED', kc:'team', go:'league',
+      t:'4 of 12 coaches ready — league is waiting',
+      p:'The Game is on the line in your save too. Tap to see who\'s holding it up.'})
+  + card({k: S.claimed ? 'DAILY CLAIM · DONE FOR TODAY' : 'DAILY CLAIM · RIVALRY WEEK', kc:'gold',
+      t: S.claimed ? 'Rivalry Pack claimed ✓' : 'Rivalry Pack is waiting',
+      body:'<button class="btn gold inline" style="margin-top:9px" ' + (S.claimed?'disabled':'') +
+      ' onclick="claimDaily(event)">' + (S.claimed ? 'CLAIMED' : 'CLAIM · KEEP THE STREAK') + '</button>'})
+  + card({cls:'tap', k:'PICK’EM · CLOSES SAT 12:00', kc:'green', go:'pickem',
+      t: S.pickCount + ' of 10 picked', p:'Your chapter is 2nd in fanbase picks. Finish your slate.'})
+  + card({cls:'tap', k:'RECRUITING · ' + S.hours + ' HRS LEFT THIS WEEK', go:'recruiting',
+      t:'5★ QB Marcus Vaux — visit unscheduled', body:'<div style="margin-top:8px">' + bar(62,'green') + '</div>'})
+  + card({cls:'tap', k:'CUT AUCTION · ENDS SOON', kc:'red', go:'cardd',
+      t: S.outbid ? 'You\'ve been outbid — 94 OVR J. Smith' : 'You lead — 94 OVR J. Smith',
+      p:'One tap to rebid before the timer runs out.'})
+  + card({cls:'tap field', k:'MATCHDAY ROOM · LIVE NOW', kc:'gold', go:'matchday',
+      t:'The Game: OSU vs Michigan', p:'41,208 fans in the room · polls, hype drops, trash talk'})
+  + card({k:'CAMPUS WIRE', t:'CFP rankings drop tonight · 7:00 ET',
+      p:'Your dynasty\'s reveal mirrors the real one — Tuesday tradition.'});
+}};
+
+/* ---------- DYNASTY HUB ---------- */
+SCREENS.dynasty = { group:'dynasty', label:'Dynasty · Hub', html: () =>
+  hub('DYNASTY · SEASON 4 · WEEK 13', 'YOUR PROGRAM', 'Ohio State · 11–0 · #2 CFP · Coach Lv 47')
+  + '<div class="stat3"><div class="st"><div class="v">11–0</div><div class="l">Record</div></div>' +
+    '<div class="st"><div class="v">#2</div><div class="l">CFP Rank</div></div>' +
+    '<div class="st"><div class="v">#1</div><div class="l">Class of ’31</div></div></div>'
+  + card({cls:'hi', k:'THIS WEEK', kc:'team', t:'vs Michigan (10–1) · The Game',
+      body:'<div style="margin-top:9px">' + bug('OSU','—','M','—','SAT 12:00','NOON KICK') + '</div>'})
+  + card({cls:'tap', go:'recruiting', k:'RECRUITING HUB', t:'12 on board · ' + S.hours + ' hrs left', p:'Board, offers, visits, hours — the whole weekly loop.'})
+  + card({cls:'tap', go:'portal', k:'TRANSFER PORTAL', t:'34 targets tracked', p:'Windows, dealbreakers, portal alerts.'})
+  + card({cls:'tap', go:'depth', k:'DEPTH CHART', t:'2 position battles flagged', p:'Fix your two-deep without booting the console.'})
+  + card({cls:'tap', go:'league', k:'ONLINE LEAGUE', t:'Big Ten Boys · 9 of 12 ready', p:'Ready status, chat, commissioner tools.'})
+  + card({cls:'tap', go:'history', k:'PROGRAM HISTORY', t:'Records, trophies & 30-year timeline', p:'The memory the console forgets — kept forever here.'})
+};
+
+/* ---------- RECRUITING ---------- */
+const RECRUITS = [
+  { id:'vaux', pos:'QB', name:'Marcus Vaux', st:5, meta:'TX · Gunslinger · #1 at pos', pct:85, lead:'Visit ready', c:'green' },
+  { id:'col', pos:'EDGE', name:'Dre Colston', st:4, meta:'OH · Speed rusher', pct:62, lead:'You lead', c:'green' },
+  { id:'whit', pos:'WR', name:'Tay Whitfield', st:4, meta:'GA · Deep threat', pct:44, lead:'Bama leads', c:'red' },
+  { id:'brek', pos:'OT', name:'Sam Brekke', st:4, meta:'WI · Pass protect', pct:51, lead:'Close race', c:'' },
+  { id:'marsh', pos:'CB', name:'J.J. Marsh', st:3, meta:'FL · Zone corner', pct:70, lead:'You lead', c:'green' },
+];
+SCREENS.recruiting = { group:'dynasty', label:'Dynasty · Recruiting Hub', html: () =>
+  subhdr('dynasty','Recruiting Hub','Week 13 · Class of 2031')
+  + '<div class="chiprow"><span class="chip on">BOARD 12</span><span class="chip" onclick="go(\'portal\')">PORTAL 34</span><span class="chip">COMMITS 8</span><span class="chip">PIPELINES</span></div>'
+  + card({k:'WEEKLY HOURS', kc:'gold', body:
+      '<div style="display:flex;align-items:center;gap:10px;margin-top:6px"><b style="font-family:var(--score);font-size:20px" id="hoursLeft">' + S.hours + '</b>' +
+      '<div style="flex:1">' + bar(S.hours/S.hoursMax*100) + '</div><span style="font-size:10px;color:var(--mut)">of ' + S.hoursMax + '</span></div>'})
+  + RECRUITS.map(r =>
+    '<div class="card tap" onclick="go(\'recruit\')">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">' + r.pos + ' · ' + r.name + '</h3>' + stars(r.st) + '</div>' +
+    '<p style="margin:2px 0 8px">' + r.meta + '</p>' +
+    '<div style="display:flex;align-items:center;gap:9px"><div style="flex:1">' + bar(r.pct, r.c) + '</div>' +
+    '<span style="font-size:10.5px;font-weight:700;color:var(--' + (r.c==='red'?'red':r.c==='green'?'green':'gold') + ')">' + r.lead + '</span></div></div>'
+  ).join('')
+  + '<button class="btn gold" onclick="readyUp(this)">SUBMIT WEEK — I\'M READY</button>'
+};
+SCREENS.recruit = { group:'dynasty', label:'Dynasty · Recruit Detail', html: () =>
+  subhdr('recruiting','Marcus Vaux','5★ QB · Katy, TX · 6\'3" 205')
+  + card({cls:'hi', k:'YOUR POSITION', kc:'team', body:
+      '<div style="display:flex;align-items:center;gap:10px;margin-top:4px">' + bar(85,'green') +
+      '</div><p style="margin-top:8px">You lead · Texas 2nd · Bama 3rd — <b style="color:var(--green)">85% interest</b>. Dealbreaker: <b>playing time</b> (you\'re clear).</p>'})
+  + card({k:'THIS WEEK\'S HOURS ON VAUX', body:
+      '<div style="display:flex;align-items:center;justify-content:center;gap:22px;margin-top:8px">' +
+      '<button class="btn ghost inline" onclick="hrs(-1)">−</button>' +
+      '<b id="vhours" style="font-family:var(--score);font-size:30px;color:var(--gold)">' + S.vauxHours + '</b>' +
+      '<button class="btn inline" onclick="hrs(1)">+</button></div>' +
+      '<p style="text-align:center;margin-top:6px">Pool left: <b id="vpool">' + S.hours + '</b> hrs</p>'})
+  + card({k:'ACTIONS', body:
+      '<div class="checkrow"><div class="ck done">✓</div>Send the House · in progress</div>' +
+      '<div class="checkrow"><div class="ck done">✓</div>Coach visit scheduled</div>' +
+      '<div class="checkrow"><div class="ck" id="visitCk"></div>Official visit — <b>The Game, Sat</b></div>'})
+  + '<button class="btn" onclick="scheduleVisit(this)">SCHEDULE OFFICIAL VISIT · RIVALRY WEEK</button>'
+  + card({k:'WHY THIS MATTERS', p:'Visits during marquee games get a +15% interest swing. Rivalry Week is your best shot before Signing Day.'})
+};
+SCREENS.portal = { group:'dynasty', label:'Dynasty · Transfer Portal', html: () =>
+  subhdr('dynasty','Transfer Portal','Window opens Jan 2 · 34 tracked')
+  + '<div class="chiprow"><span class="chip on">ALL</span><span class="chip">QB</span><span class="chip">EDGE</span><span class="chip">WR</span><span class="chip">FITS MY SCHEME</span></div>'
+  + card({k:'PORTAL RADAR · PREDICTED ENTRIES', kc:'gold', t:'3 likely entries match your needs',
+      p:'Radar watches playing-time dealbreakers league-wide and flags fits before the window opens.'})
+  + [['QB Cade Morrow','Oregon St · 88 OVR · wants: starter','92% fit'],
+     ['EDGE T. Ballard','Georgia · 85 OVR · wants: NIL + snaps','81% fit'],
+     ['WR D. Okoye','SMU · 84 OVR · wants: contender','77% fit']].map(r =>
+     '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">' + r[0] + '</h3>' +
+     '<span class="flag" style="background:rgba(47,191,113,.15);color:var(--green)">' + r[2] + '</span></div><p>' + r[1] + '</p>' +
+     '<button class="btn ghost inline" style="margin-top:8px" onclick="toast(\'Added to portal board\')">ADD TO BOARD</button></div>').join('')
+};
+SCREENS.depth = { group:'dynasty', label:'Dynasty · Depth Chart', html: () =>
+  subhdr('dynasty','Depth Chart','2 battles flagged · legible at last')
+  + '<div class="chiprow"><span class="chip on">OFFENSE</span><span class="chip">DEFENSE</span><span class="chip">SPECIAL</span></div>'
+  + card({k:'FLAGGED · RB1 BATTLE', kc:'red', body:
+      '<div class="rowi">' + av('26','var(--team)') + '<div class="grow"><div class="t">J. Carter · 88 OVR</div><div class="s">Fresh legs · 92% wear</div></div><span class="flag" style="background:rgba(47,191,113,.15);color:var(--green)">START</span></div>' +
+      '<div class="rowi">' + av('7','var(--surface2)') + '<div class="grow"><div class="t">M. Bell · 87 OVR</div><div class="s">Shoulder · 71% wear</div></div>' +
+      '<button class="btn ghost inline" onclick="toast(\'Swapped — syncs to console\')">SWAP</button></div>'})
+  + card({k:'QB', body:'<div class="rowi">' + av('12','var(--team)') + '<div class="grow"><div class="t">R. Osei · 91 OVR</div><div class="s">QB1 · locked</div></div></div>' +
+      '<div class="rowi">' + av('4','var(--surface2)') + '<div class="grow"><div class="t">T. Fine · 79 OVR</div><div class="s">QB2</div></div></div>'})
+  + card({k:'WR — FLAGGED: WR3 EMPTY', kc:'red', body:
+      '<div class="rowi">' + av('1','var(--team)') + '<div class="grow"><div class="t">K. Dawson · 89</div><div class="s">X · WR1</div></div></div>' +
+      '<div class="rowi">' + av('83','var(--surface2)') + '<div class="grow"><div class="t">Assign WR3</div><div class="s">Eligible: 4 players</div></div>' +
+      '<button class="btn inline" onclick="toast(\'B. Knox set at WR3\')">AUTO-FIX</button></div>'})
+};
+SCREENS.league = { group:'dynasty', label:'Dynasty · League Hub', html: () =>
+  subhdr('dynasty','Big Ten Boys','Online Dynasty · 12 users · S4 W13')
+  + card({cls:'hi', k:'ADVANCE STATUS', kc:'green', t:(S.ready?'10':'9') + ' of 12 ready',
+      body:'<div style="margin-top:8px">' + bar((S.ready?10:9)/12*100,'green') + '</div>'})
+  + [['Arun · Ohio St', S.ready?'READY':'RECRUITING', S.ready?'green':'gold','A','var(--team)', ''],
+     ['Dev · Michigan','RECRUITING · 4 HRS LEFT','gold','D','#1B4B8F','NUDGE'],
+     ['Cole · Penn St','NOT STARTED','red','C','#20488A','NUDGE'],
+     ['Mike · Iowa','AWAY UNTIL SUN','red','M','#8a7a20','ACT FOR']].map(m =>
+     '<div class="card"><div class="rowi" style="border:none;padding:2px 0">' + av(m[3],m[4]) +
+     '<div class="grow"><div class="t">' + m[0] + '</div><div class="s" style="color:var(--' + m[2] + ');font-weight:700">' + m[1] + '</div></div>' +
+     (m[5] ? '<button class="btn ghost inline" onclick="toast(\'' + (m[5]==='NUDGE'?'Nudge sent 👊':'Acting for Mike — encourage phase handled') + '\')">' + m[5] + '</button>' : '') +
+     '</div></div>').join('')
+  + card({k:'LEAGUE CHAT', body:
+      '<div class="rowi"><div class="grow"><div class="s"><b style="color:#5B9BD5">Dev:</b> nobody touch the portal QB, he\'s mine</div></div></div>' +
+      '<div class="rowi"><div class="grow"><div class="s"><b style="color:var(--green)">Jess:</b> advance by 9 or I sim you all</div></div></div>' +
+      '<div class="rowi"><div class="grow"><div class="s" style="border:1px solid var(--gold);border-radius:8px;padding:6px 9px;color:var(--gold)">📋 Trade offer: Cole sends CB J. Hill for your 2032 2nd — <u>view</u></div></div></div>'})
+  + '<button class="btn gold" onclick="toast(\'Advance queued — server-verified, no lost saves\')">COMMISSIONER · ADVANCE WEEK</button>'
+};
+SCREENS.history = { group:'dynasty', label:'Dynasty · Program History', html: () =>
+  subhdr('dynasty','Program History','Season 4 · the app remembers everything')
+  + '<div class="stat3"><div class="st"><div class="v">2</div><div class="l">Nattys</div></div><div class="st"><div class="v">3</div><div class="l">B1G Titles</div></div><div class="st"><div class="v">41–7</div><div class="l">All-time</div></div></div>'
+  + card({cls:'field', k:'TROPHY ROOM', kc:'gold', body:
+      '<div style="display:flex;gap:14px;font-size:30px;margin-top:6px">🏆 🏆 🥇 🏈 🔔</div>' +
+      '<p style="margin-top:6px">S2 Natty · S3 Natty · S3 Heisman (R. Osei) · The Game ×3 · Illibuck ×2</p>'})
+  + card({k:'RECORD BOOK', body:
+      '<div class="checkrow"><div class="ck done">✓</div>Single-season pass yards — Osei, 4,812 (S3)</div>' +
+      '<div class="checkrow"><div class="ck done">✓</div>Longest win streak — 19 (S2–S3)</div>' +
+      '<div class="checkrow"><div class="ck done">✓</div>Best class rank — #1 (S4)</div>'})
+  + card({k:'30-YEAR TIMELINE', t:'S1: 8–5 · S2: 13–1 🏆 · S3: 14–0 🏆 · S4: 11–0 …',
+      p:'Every champion, Heisman and record from every season of this save — exportable, shareable, permanent.'})
+};
+/* ---------- CUT HUB ---------- */
+SCREENS.cut = { group:'cut', label:'CUT · Hub', html: () =>
+  hub('COLLEGE ULTIMATE TEAM', 'CUT HQ', 'Coins ' + S.coins.toLocaleString() + ' · Trophies ' + S.points.toLocaleString() + ' · OVR 89')
+  + card({cls:'hi tap', go:'cardd', k: S.outbid ? 'AUCTION · YOU\'VE BEEN OUTBID' : 'AUCTION · YOU LEAD', kc:'red',
+      t:'94 OVR J. Smith · EDGE · Rivalry Series', body:'<p style="margin-top:4px">Ends in <span class="timer hot" data-t="764">12:44</span> — one tap to rebid.</p>'})
+  + card({cls:'tap', go:'market', k:'MARKET', t:'Auction house & price trends', p:'Watch, bid, snipe, list — with buy-window signals.'})
+  + card({cls:'tap', go:'lineup', k:'MY TEAM', t:'Lineup, staff & chemistry', p:'Full roster control. Prep here, play on console.'})
+  + card({cls:'tap', go:'sets', k:'SETS', t:'Rivalry Week set · 4 of 6 done', p:'Live-validating checklist — see exactly what\'s missing.'})
+  + card({cls:'tap', go:'fieldpass', k:'FIELD PASS · S2', t:'Level 23 · 610 XP to 24', body:'<div style="margin-top:8px">' + bar(68) + '</div>'})
+};
+/* ---------- MARKET ---------- */
+const LOTS = [
+  { ovr:96, name:'C. Hale · QB', ser:'Heisman promo', price:'88,200', t:58, hot:1 },
+  { ovr:94, name:'J. Smith · EDGE', ser:'Rivalry Series', price:'47,500', t:764, hot:1, go:'cardd' },
+  { ovr:91, name:'T. Reyes · WR', ser:'Base gold', price:'22,100', t:1862 },
+  { ovr:89, name:'M. Okafor · CB', ser:'Campus Heroes', price:'14,900', t:2657 },
+  { ovr:88, name:'D. Fields · MLB', ser:'Base gold', price:'11,300', t:3120 },
+];
+SCREENS.market = { group:'cut', label:'CUT · Auction Market', html: () =>
+  subhdr('cut','Auction Market','Live · 12,408 lots')
+  + '<div class="chiprow"><span class="chip on">ALL</span><span class="chip">QB</span><span class="chip">EDGE</span><span class="chip">90+</span><span class="chip">ENDING SOON</span><span class="chip gold" onclick="openFilters()">⚙ FILTERS</span></div>'
+  + LOTS.map(l =>
+    '<div class="card' + (l.go?' tap':'') + '"' + (l.go ? ' onclick="go(\'cardd\')"' : '') + '><div style="display:flex;gap:11px;align-items:center">' +
+    '<div class="ovr"><b>' + l.ovr + '</b><span>OVR</span></div>' +
+    '<div class="grow" style="flex:1"><div style="font-size:13px;font-weight:700">' + l.name + '</div>' +
+    '<div style="font-size:10.5px;color:var(--mut)">' + l.ser + '</div>' +
+    '<div style="font-size:12.5px;font-weight:700;color:var(--gold);margin-top:3px">' + l.price + ' coins</div></div>' +
+    '<div style="text-align:right"><span class="timer' + (l.t<300?' hot':'') + '" data-t="' + l.t + '">--:--</span><br>' +
+    '<button class="btn inline' + (l.hot?'':' ghost') + '" style="margin-top:6px" onclick="event.stopPropagation();toast(\'Bid placed ✓\')">BID</button></div></div></div>').join('')
+  + card({k:'PRICE TREND · 96 OVR QBS · 7D', kc:'green', t:'▼ 18% — buy window open',
+      p:'Promo cycle analysis: prices bottom out 48h after a Heisman drop. Alerts available.'})
+};
+SCREENS.cardd = { group:'cut', label:'CUT · Card Detail / Bidding', html: () =>
+  subhdr('market','J. Smith · EDGE','94 OVR · Rivalry Series')
+  + '<div style="display:flex;justify-content:center;padding:10px 0 4px"><div class="ovr" style="width:120px;height:158px;border-color:var(--gold);box-shadow:0 0 34px -8px var(--team-glow)"><b style="font-size:42px">94</b><span style="font-size:11px">EDGE · OSU</span></div></div>'
+  + card({k: S.outbid ? 'YOU\'VE BEEN OUTBID' : 'YOU LEAD THIS AUCTION', kc: S.outbid ? 'red' : 'green',
+      body:'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px">' +
+      '<div><div style="font-size:10px;color:var(--mut)">CURRENT BID</div><b id="bidNow" style="font-family:var(--score);font-size:24px;color:var(--gold)">' + S.bid.toLocaleString() + '</b></div>' +
+      '<div style="text-align:right"><div style="font-size:10px;color:var(--mut)">ENDS IN</div><span class="timer hot" data-t="764" style="font-size:20px">12:44</span></div></div>'})
+  + '<button class="btn" id="rebidBtn" onclick="rebid()">' + (S.outbid ? 'REBID · ' + (S.bid+1000).toLocaleString() + ' (+1,000)' : 'YOU LEAD ✓') + '</button>'
+  + '<button class="btn ghost" onclick="toast(\'Buy-now: 62,000 coins\')">BUY NOW · 62,000</button>'
+  + card({k:'SMART CONTEXT', p:'3 similar 94 EDGE sold today: 46.1K / 48.5K / 47.9K. Fair value ≈ 47.5K. Sniping window: last 60s.'})
+};
+SCREENS.lineup = { group:'cut', label:'CUT · My Team', html: () =>
+  subhdr('cut','My Team','89 OVR · Rivalry chem +2')
+  + card({k:'STAFF LOADOUT', body:
+      '<div class="rowi">' + av('HC','var(--team)') + '<div class="grow"><div class="t">HC R. Day-style · Tempo</div><div class="s">+2 OVR to spread routes</div></div><span class="chip">SWAP</span></div>' +
+      '<div class="rowi">' + av('OC','var(--surface2)') + '<div class="grow"><div class="t">OC Air Raid</div><div class="s">+1 deep chem</div></div><span class="chip">SWAP</span></div>'})
+  + card({k:'STARTING LINEUP · TAP TO EDIT', body:
+      ['QB · C. Hale · 96','HB · J. Carter · 91','WR · K. Dawson · 92','EDGE · J. Smith · 94 (pending bid)','CB · M. Okafor · 89'].map(x =>
+      '<div class="checkrow"><div class="ck done">✓</div>' + x + '</div>').join('')})
+  + card({k:'BENCH ALERT', kc:'red', t:'2 uncontested upgrades on your bench', p:'Auto-optimize swaps them in — you approve each move.', body:'<button class="btn inline gold" style="margin-top:8px" onclick="toast(\'Lineup optimized +1 OVR\')">AUTO-OPTIMIZE</button>'})
+};
+SCREENS.sets = { group:'cut', label:'CUT · Sets (live checklist)', html: () =>
+  subhdr('cut','Rivalry Week Set','Reward: 93 OVR Rivalry J. Marsh')
+  + card({cls:'hi', k:'LIVE CHECKLIST · 4 OF 6', kc:'gold', body:
+      '<div class="checkrow"><div class="ck done">✓</div>5× Gold players (any)</div>' +
+      '<div class="checkrow"><div class="ck done">✓</div>2× 85+ OVR defenders</div>' +
+      '<div class="checkrow"><div class="ck done">✓</div>1× Big Ten player</div>' +
+      '<div class="checkrow"><div class="ck done">✓</div>Team chem 90+</div>' +
+      '<div class="checkrow"><div class="ck"></div>1× 88+ WR — <b style="color:var(--gold)">T. Reyes on market · 22.1K</b></div>' +
+      '<div class="checkrow"><div class="ck"></div>1× Rivalry Series item</div>'})
+  + '<button class="btn" onclick="go(\'market\')">FILL FROM MARKET · 2 MISSING</button>'
+  + card({k:'WHY THIS SCREEN', p:'FC\'s most-copied pattern: the requirements checklist that validates live as your collection changes. No math, no guesswork.'})
+};
+SCREENS.fieldpass = { group:'cut', label:'CUT · Field Pass', html: () =>
+  subhdr('cut','Field Pass · Season 2','Level 23 · Premium track active')
+  + card({cls:'hi', k:'LEVEL 23 → 24', kc:'gold', body:'<div style="margin-top:8px">' + bar(68) + '</div><p style="margin-top:6px">610 XP to go · daily objectives reset in 9h</p>'})
+  + card({k:'CLAIMABLE NOW', kc:'green', body:
+      '<div class="checkrow"><div class="ck done">✓</div>Lv 22 · 1,500 coins <button class="btn inline gold" style="margin-left:auto" onclick="claimTier(this)">CLAIM</button></div>' +
+      '<div class="checkrow"><div class="ck done">✓</div>Lv 23 · Rivalry pack <button class="btn inline gold" style="margin-left:auto" onclick="claimTier(this)">CLAIM</button></div>'})
+  + card({k:'TODAY\'S OBJECTIVES · 600 XP', body:
+      '<div class="checkrow"><div class="ck done">✓</div>Check the market (100)</div>' +
+      '<div class="checkrow"><div class="ck done">✓</div>Finish 3 picks (200)</div>' +
+      '<div class="checkrow"><div class="ck"></div>Win a chapter war skirmish (300) — <span style="color:var(--gold)">app-exclusive</span></div>'})
+  + card({k:'FAN PASS · APP-WIDE', t:'Attend, manage, socialize — it all earns', p:'The free app-level track above mode passes. Check-ins, gifting and picks all feed it.'})
+};
+
+/* ---------- SOCIAL ---------- */
+SCREENS.social = { group:'social', label:'Social · Hub', html: () =>
+  hub('RIVALRY WEEK', 'THE YARD', 'Your people, your enemies, and everyone in between')
+  + card({cls:'hi tap', go:'matchday', k:'LIVE NOW', kc:'red', t:'Matchday: The Game · 41,208 in',
+      body:'<div style="margin-top:9px">' + bug('OSU',21,'M',17,'Q3 · 8:42','LIVE') + '</div>'})
+  + card({cls:'tap', go:'chapter', k:'YOUR CHAPTER', t:'Buckeye #214 · War vs Go Blue #77', p:'Leading 8,410 – 7,988 · 2d 4h left · 3 gift requests'})
+  + card({cls:'tap', go:'pickem', k:'PICK’EM', t:'Week 13 slate · ' + S.pickCount + '/10 picked', p:'Chapter aggregate: 94% take OSU. Fanbase vs fanbase scoring.'})
+  + card({cls:'tap', go:'tailgate', k:'THE TAILGATE', t:'All-fanbase feed · flair required', p:'The moderated melting pot. Best posts rise, rivalry stays fun.'})
+  + card({k:'UPCOMING EVENTS', body:
+      '<div class="checkrow"><div class="ck done">✓</div>NOW · Rivalry Week — war multipliers ×2</div>' +
+      '<div class="checkrow"><div class="ck"></div>DEC 6 · Conf Championship watch rooms</div>' +
+      '<div class="checkrow"><div class="ck"></div>JAN 2 · Portal Frenzy live tracker</div>'})
+};
+SCREENS.chapter = { group:'social', label:'Social · Chapter (clan)', html: () =>
+  subhdr('social','Buckeye Chapter #214','42 members · Lv 17 · Home Base')
+  + card({cls:'hi', k:'CHAPTER WAR · RIVALRY WEEK ×2', kc:'team', body:
+      '<div style="display:flex;align-items:center;gap:10px;margin-top:7px">' + av('214','var(--team)') +
+      '<div style="flex:1"><b style="font-family:var(--score);font-size:16px">8,410</b><span style="color:var(--mut);font-size:11px"> vs </span><b style="font-family:var(--score);font-size:16px;color:var(--mut)">7,988</b>' +
+      '<div style="margin-top:5px">' + bar(51.3,'team') + '</div></div>' + av('GB','#1B4B8F') + '</div>' +
+      '<p style="margin-top:7px">Go Blue #77 · ends 2d 4h · every pick, check-in & CUT objective scores</p>'})
+  + card({k:'WEEKLY MILESTONE · 10K = CHAPTER PACK', body:'<div style="margin-top:7px">' + bar(84,'green') + '</div><p style="margin-top:5px">8,410 / 10,000 — everyone\'s activity counts</p>'})
+  + '<div class="sec">GIFT REQUESTS</div>'
+  + [['g1','Dev needs a Streak Shield','9 hrs left'],['g2','Coop requests a Rivalry Pack','chapter perk']].map(g =>
+      '<div class="card"><div class="rowi" style="border:none;padding:0">' + av(g[1][0],'var(--surface2)') +
+      '<div class="grow"><div class="t">' + g[1] + '</div><div class="s">' + g[2] + '</div></div>' +
+      '<button class="btn inline gold" id="' + g[0] + '" onclick="sendGift(\'' + g[0] + '\')">SEND</button></div></div>').join('')
+  + card({k:'TOP CONTRIBUTORS', body:
+      ['Arun · 1,240','Lena · 1,105','Coop · 980'].map((x,i) => '<div class="checkrow"><div class="ck' + (i===0?' done':'') + '">' + (i+1) + '</div>' + x + ' pts</div>').join('')})
+};
+SCREENS.matchday = { group:'social', label:'Social · Matchday Room (live)', html: () =>
+  subhdr('social','Matchday · The Game','41,208 in · room closes at final whistle')
+  + '<div style="padding:0 18px 8px">' + bug('OSU',21,'M',17,'Q3 · 8:42','4TH & 1 · MICH 34') + '</div>'
+  + card({cls:'hi', k:'LIVE POLL · 4TH & 1 AT MIDFIELD', kc:'gold', t:'Do they go for it?', body:
+      '<div style="display:flex;gap:8px;margin-top:9px" id="pollBtns">' +
+      '<button class="btn inline" onclick="vote(\'go\')" id="pGo">GO · 78%</button>' +
+      '<button class="btn ghost inline" onclick="vote(\'punt\')" id="pPunt">PUNT · 22%</button></div>'})
+  + '<div class="msg">' + av('B','var(--team)','sm') + '<div class="b"><div class="u" style="color:var(--team2)">BrutusFan88 · OSU</div>that line is getting BULLIED</div></div>'
+  + '<div class="msg">' + av('A','#1B4B8F','sm') + '<div class="b"><div class="u" style="color:#5B9BD5">AnnArborAl · MICH</div>our D line lives rent free in your backfield</div></div>'
+  + '<div class="msg obj">' + av('A','var(--team)','sm') + '<div class="b"><div class="u" style="color:var(--gold)">Arun · OSU</div>🃏 sent a RENT FREE card to AnnArborAl</div></div>'
+  + '<div class="msg">' + av('W','#1B4B8F','sm') + '<div class="b"><div class="u" style="color:#5B9BD5">WolvNation · MICH</div>bold words for a 4-point game</div></div>'
+  + card({cls:'field', k:'HYPE MOMENT', kc:'gold', t:'OSU TOUCHDOWN — claim the gameday sticker',
+      body:'<button class="btn inline gold" style="margin-top:8px" onclick="celeb(\'🏈\',\'TOUCHDOWN OHIO STATE\',\'Gameday sticker added to your Trophy Case. 28–17.\')">CLAIM ⚡</button>'})
+  + '<div style="display:flex;gap:8px;padding:4px 18px 20px"><button class="btn ghost inline" style="flex:1" onclick="openCards()">🃏 TRASH-TALK CARDS</button>' +
+    '<button class="btn inline" style="flex:1" onclick="toast(\'Message sent to the room\')">💬 TALK</button></div>'
+};
+SCREENS.pickem = { group:'social', label:'Social · Pick’em', html: () => {
+  const games = [['osu','OSU −7','mich','MICH +7'],['uga','UGA −3','bama','BAMA +3'],['tex','TEX −10','ou','OU +10'],['ore','ORE −6','wash','WASH +6']];
+  return subhdr('social','Week 13 Pick’em','Closes Sat 12:00 · fanbase vs fanbase')
+  + card({k:'YOUR SLATE', kc:'gold', t:(S.pickCount + Object.keys(S.picks).length) + ' of 10 picked', p:'Correct picks earn Fan Pass XP + chapter war points. Spoiler-free share grid mints at final whistle.'})
+  + games.map((g,i) =>
+      '<div class="card"><div style="display:flex;gap:8px">' +
+      '<button class="btn ghost inline" style="flex:1" id="pk' + i + 'a" onclick="pick(' + i + ',\'a\')">' + g[1] + '</button>' +
+      '<button class="btn ghost inline" style="flex:1" id="pk' + i + 'b" onclick="pick(' + i + ',\'b\')">' + g[3] + '</button></div></div>').join('')
+  + '<button class="btn gold" onclick="toast(\'Slate locked 🔒 Good luck Saturday\')">LOCK MY PICKS</button>'
+  + card({k:'FANBASE METER', p:'94% of Buckeye fans take OSU −7. Michigan fans: 88% the other way. Somebody\'s wrong — the grid settles it.'});
+}};
+SCREENS.tailgate = { group:'social', label:'Social · The Tailgate', html: () =>
+  subhdr('social','The Tailgate','Every fanbase · flair required · modded 24/7')
+  + '<div class="msg">' + av('T','#BF5700','sm') + '<div class="b"><div class="u" style="color:#BF5700">HookEmHarry · TEX</div>watching The Game as a neutral is the best sport on earth</div></div>'
+  + '<div class="msg">' + av('G','#BA0C2F','sm') + '<div class="b"><div class="u" style="color:#BA0C2F">DawgDays · UGA</div>y\'all realize the winner gets Indiana in the CFP right 💀</div></div>'
+  + '<div class="msg obj">' + av('📊','var(--surface2)','sm') + '<div class="b"><div class="u" style="color:var(--gold)">COMMUNITY POLL</div>Best rivalry trophy? 🪣 Old Oaken Bucket 41% · 🔔 Victory Bell 33% · ⚓ other 26%</div></div>'
+  + '<div class="msg">' + av('B','var(--team)','sm') + '<div class="b"><div class="u" style="color:var(--team2)">ShoeCrew · OSU</div>posting my Wrapped the second we win out. book it.</div></div>'
+  + card({k:'HOUSE RULES', p:'Trash talk: yes. Identity attacks: never. Event-aware moderation is staffed up for Rivalry Week. Report = 2 taps.'})
+};
+/* ---------- YOU / LIVE-IT ---------- */
+SCREENS.you = { group:'you', label:'You · Profile Hub', html: () =>
+  hub('COACH ARUN · BUCKEYE FOR LIFE', 'YOUR LEGACY', THEMES[S.theme].name + ' · Chapter #214 · Fan Lv 31')
+  + '<div class="stat3"><div class="st"><div class="v">' + (S.gamesAttended + (S.checkedIn?1:0)) + '</div><div class="l">Games seen</div></div>' +
+    '<div class="st"><div class="v">' + S.wl + '</div><div class="l">Your W–L</div></div>' +
+    '<div class="st"><div class="v">🔥 ' + S.streak + '</div><div class="l">Wk streak</div></div></div>'
+  + card({cls:'hi tap', go:'ledger', k:'FAN LEDGER', kc:'team', t: S.checkedIn ? 'Checked in · Ohio Stadium ✓' : 'You\'re near Ohio Stadium', p: S.checkedIn ? 'Game #48 logged. +250 pts, streak safe.' : 'Geofence verified — check in for The Game.'})
+  + card({cls:'tap', go:'collection', k:'CAMPUS COLLECTION', t:'14 of 63 · 2 claimable nearby', p:'Location-locked memorabilia. Rivalry-game grails this week only.'})
+  + card({cls:'tap', go:'trophy', k:'TROPHY CASE', t:'Game + real world, one shelf', p:'Nattys next to attendance streaks next to 96 OVR pulls.'})
+  + card({cls:'tap', go:'wrapped', k:'DYNASTY WRAPPED · READY', kc:'gold', t:'Season 4 story is minted', p:'Tap to watch & share your season.'})
+  + card({cls:'tap', go:'store', k:'WALLET & STORE', t:'182,400 coins · 3,120 trophies · $12.50', p:'One balance across everything. Webstore bonus active.'})
+  + card({cls:'tap', go:'settings', k:'SETTINGS', t:'Team theme, alerts, privacy', p:'Currently themed: ' + THEMES[S.theme].name + '.'})
+};
+SCREENS.ledger = { group:'you', label:'Live It · Fan Ledger / Check-in', html: () =>
+  subhdr('you','Fan Ledger','Your real-world record, verified')
+  + (S.checkedIn
+    ? card({cls:'hi field', k:'CHECKED IN ✓ · GEOFENCE VERIFIED', kc:'gold', t:'Ohio Stadium — The Game', p:'Nov 28, 2026 · your 48th game · +250 pts · streak extended'})
+    : card({cls:'hi field', k:'YOU\'RE AT THE SHOE', kc:'gold', t:'Ohio Stadium — The Game',
+        body:'<button class="btn gold" style="margin:10px 0 2px;width:100%" onclick="checkIn()">CHECK IN · +250 PTS</button>'}))
+  + card({k:'HISTORIC CHECK-IN', t:'Were you at the 2015 Sugar Bowl?', p:'Log games you attended before the app existed — decades of fandom, honored on day one.',
+      body:'<button class="btn ghost inline" style="margin-top:8px" onclick="toast(\'2015 Sugar Bowl added — 85–..you were there 🏆\')">ADD A PAST GAME</button>'})
+  + card({k:'SEASON STREAK · WEEKLY', body:'<div style="display:flex;gap:6px;margin-top:8px">' +
+      Array.from({length:12},(_,i)=>'<div style="width:16px;height:16px;border-radius:50%;background:' + (i < 9+(S.checkedIn?1:0) ? 'var(--gold)' : 'var(--line)') + '"></div>').join('') +
+      '</div><p style="margin-top:6px">Weekly like the sport. Watch-party & home check-ins keep it alive when you can\'t travel.</p>'})
+  + '<div class="sec">RECENT GAMES</div>'
+  + card({body: bug('OSU',38,'PSU',17,'NOV 14','W · ATTENDED') + '<div style="height:8px"></div>' + bug('OSU',24,'IU',27,'NOV 7','L · WATCH PARTY')})
+};
+SCREENS.collection = { group:'you', label:'Live It · Campus Collection', html: () =>
+  subhdr('you','Campus Collection','14 of 63 · tiered: visit → gameday → rivalry')
+  + '<div class="medals">' + [
+    ['🌰','Buckeye Grove','GOLD · gameday','var(--gold)',''],
+    ['🐚','The Shoe','GOLD · gameday','var(--gold)',''],
+    ['🌳','Toomer\'s Corner','RARE · visited','var(--green)',''],
+    ['🪨','Howard\'s Rock','LOCKED · visit Clemson','var(--line)','locked'],
+    ['⛵','Vol Navy','LOCKED · gameday only','var(--line)','locked'],
+    ['🔔','Victory Bell','CLAIMABLE NEARBY','var(--team)',''],
+  ].map(m => '<div class="medal ' + m[4] + '" onclick="toast(\'' + m[1] + ' — ' + m[2] + '\')"><div class="ring" style="border:3px solid ' + m[3] + '">' + m[0] + '</div><div class="t">' + m[1] + '</div><div class="s">' + m[2] + '</div></div>').join('') + '</div>'
+  + card({cls:'hi', k:'RIVALRY GRAIL · THIS WEEK ONLY', kc:'red', t:'The Game — Gold Variant',
+      p:'Only mintable checked in at Ohio Stadium or Michigan Stadium during The Game. 41,208 eligible right now.'})
+  + card({k:'“I WAS THERE” VAULT', t:'2 historic moments held', p:'6-OT Iron Bowl \'26 · Indiana\'s 16-0 natty. Nobody knows which games mint history — every check-in is a ticket.'})
+};
+SCREENS.trophy = { group:'you', label:'Live It · Trophy Case', html: () =>
+  subhdr('you','Trophy Case','One shelf · both worlds')
+  + '<div class="medals">' + [
+    ['🏆','S4 Natty','Dynasty','var(--gold)'],['🎟️','I WAS THERE','6-OT Iron Bowl','var(--team)'],['💎','96 OVR Pull','CUT','#7B5CD6'],
+    ['🏟️','48 Games','Fan Ledger','var(--gold)'],['⚔️','Rivalry W ×4','Chapter wars','var(--green)'],['🔥','9-wk Streak','Season','var(--red)'],
+  ].map(m => '<div class="medal"><div class="ring" style="border:3px solid ' + m[3] + '">' + m[0] + '</div><div class="t">' + m[1] + '</div><div class="s">' + m[2] + '</div></div>').join('') + '</div>'
+  + card({k:'NEXT ACHIEVEMENTS', body:
+      '<div style="margin-top:4px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span>All 16 SEC stadiums</span><span style="color:var(--gold)">9/16</span></div>' + bar(56) + '</div>' +
+      '<div style="margin-top:10px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span>2★ school natty</span><span style="color:var(--team2)">30%</span></div>' + bar(30,'team') + '</div>'})
+  + card({k:'SHOWCASE IS PUBLIC', p:'Your profile answers "how big a fan are you?" — in full. Share any shelf as a story card.',
+      body:'<button class="btn inline gold" style="margin-top:8px" onclick="toast(\'Shelf shared as 9:16 story 📤\')">SHARE SHELF</button>'})
+};
+SCREENS.wrapped = { group:'you', label:'Live It · Dynasty Wrapped', html: () =>
+  '<div class="storycard on" onclick="wrapNext(1)" id="wrap0" style="background:linear-gradient(170deg,var(--team-dk),#0D0D12)">' +
+    '<div class="kick" style="font-family:var(--score);letter-spacing:3px;color:var(--gold);font-size:11px">MY DYNASTY WRAPPED · SEASON 4</div>' +
+    '<h2 style="font-family:var(--varsity);font-size:34px;line-height:1.2;margin-top:10px">13–0.<br>NATTY.<br>#1 CLASS.</h2>' +
+    '<p style="color:rgba(255,255,255,.75);margin-top:14px;font-size:13px">tap to continue →</p></div>' +
+  '<div class="storycard" onclick="wrapNext(2)" id="wrap1" style="background:linear-gradient(170deg,#1A1030,#0D0D12)">' +
+    '<div class="kick" style="font-family:var(--score);letter-spacing:3px;color:var(--gold);font-size:11px">RECRUITING</div>' +
+    '<h2 style="font-family:var(--varsity);font-size:30px;line-height:1.25;margin-top:10px">You out-recruited 96% of coaches.</h2>' +
+    '<p style="color:rgba(255,255,255,.75);margin-top:14px;font-size:13px">27 offers · 8 flips · 1 heartbreak (sorry, Vaux Sr.)</p></div>' +
+  '<div class="storycard" id="wrap2" style="background:linear-gradient(170deg,#12341f,#0D0D12)">' +
+    '<div class="kick" style="font-family:var(--score);letter-spacing:3px;color:var(--gold);font-size:11px">THE MOMENT</div>' +
+    '<h2 style="font-family:var(--varsity);font-size:30px;line-height:1.25;margin-top:10px">42–3 over your rival.</h2>' +
+    '<p style="color:rgba(255,255,255,.75);margin-top:14px;font-size:13px">Rent free. Forever.</p>' +
+    '<button class="btn gold" style="margin:26px 0 0;width:100%" onclick="event.stopPropagation();toast(\'Shared to your story 📤\')">SHARE MY WRAPPED</button>' +
+    '<button class="btn ghost" style="margin:10px 0 0;width:100%" onclick="event.stopPropagation();wrapReset();back()">CLOSE</button></div>'
+};
+SCREENS.store = { group:'you', label:'You · Wallet & Store', html: () =>
+  subhdr('you','Wallet & Store','One balance · three lanes · zero dark patterns')
+  + '<div class="stat3"><div class="st"><div class="v">182K</div><div class="l">Coins</div></div><div class="st"><div class="v">3,120</div><div class="l">Trophies</div></div><div class="st"><div class="v">$12.50</div><div class="l">EA Wallet</div></div></div>'
+  + card({cls:'hi', k:'WEBSTORE BONUS · GO DIRECT', kc:'gold', t:'+10% points on web checkout',
+      p:'Opens in browser · EA direct. Real prices, disclosed odds, no countdown games.',
+      body:'<button class="btn inline gold" style="margin-top:8px" onclick="toast(\'Opening EA webstore ↗ (+10% bonus)\')">OPEN WEBSTORE ↗</button>'})
+  + card({k:'RIVALRY WEEK BUNDLE', t:'2 Rivalry packs + streak shield · 1,050 pts', p:'Odds disclosed on tap. Available all week — no fake urgency.',
+      body:'<button class="btn inline" style="margin-top:8px" onclick="toast(\'Purchased via IAP ✓\')">BUY · IN-APP</button>'})
+  + card({k:'GIFT A CHAPTER-MATE', t:'Send a pack to anyone in #214', p:'Public shout-out in chapter chat when you do. Generosity is status.',
+      body:'<button class="btn ghost inline" style="margin-top:8px" onclick="toast(\'Gift sent to Dev 🎁 announced in chapter\')">GIFT</button>'})
+  + card({k:'LOYALTY', t:'Buckeye Points · Lv 3', body:'<div style="margin-top:8px">' + bar(45,'team') + '</div><p style="margin-top:5px">Earn on every lane — IAP, webstore, even check-ins.</p>'})
+};
+SCREENS.settings = { group:'you', label:'You · Settings / Team Theme', html: () =>
+  subhdr('you','Settings','Theme, alerts, account')
+  + '<div class="sec">TEAM THEME — THE WHOLE APP RETHEMES</div>'
+  + '<div class="card"><div style="display:flex;gap:9px;flex-wrap:wrap">' +
+    Object.entries(THEMES).map(([k,t]) =>
+      '<div class="chip' + (S.theme===k?' on':'') + '" style="padding:9px 14px" onclick="setTheme(\'' + k + '\')">' +
+      '<span class="dot" style="background:' + t.team + '"></span>' + t.name + '</div>').join('') +
+    '</div><p style="margin-top:9px">60-30-10 theming: dark surface stays, your colors take over accents, headers, chips and glows. Multi-team fans can pin a second team.</p></div>'
+  + card({k:'NOTIFICATIONS', body:
+      ['Outbid alerts · instant','Recruit lead changes','League advance / nudges','Matchday room opens','Chapter gift requests','Collection drops nearby'].map((x,i) =>
+      '<div class="checkrow"><div class="ck done">✓</div>' + x + '</div>').join('')})
+  + card({k:'ACCOUNT', p:'EA ID: arun_ln · linked to console + CFB 27 Mobile. Sync integrity: every write is server-verified before it commits. Your saves are sacred.'})
+};
+
+/* ================= ROUTER / BOOT ================= */
+let cur = null; const stack = [];
+const TABS = [
+  ['home','🏠','Home'],['dynasty','🏈','Dynasty'],['cut','🃏','CUT'],['social','📣','Social'],['you','⭐','You']
+];
+function render(id){
+  const host = document.getElementById('screens');
+  let el = document.getElementById('sc-' + id);
+  if (!el){ el = document.createElement('section'); el.className = 'screen'; el.id = 'sc-' + id; host.appendChild(el); }
+  el.innerHTML = SCREENS[id].html();
+}
+function go(id, isBack){
+  if (!SCREENS[id]) return;
+  if (cur && !isBack && cur !== id) stack.push(cur);
+  render(id);
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on','back-anim'));
+  const el = document.getElementById('sc-' + id);
+  el.classList.add('on'); if (isBack) el.classList.add('back-anim');
+  el.scrollTop = 0; cur = id;
+  const g = SCREENS[id].group;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.g === g));
+  document.querySelectorAll('.side a').forEach(a => a.classList.toggle('on', a.dataset.id === id));
+  document.getElementById('livepill').style.display = (id === 'matchday' || id === 'wrapped') ? 'none' : 'flex';
+}
+function back(){ const p = stack.pop() || SCREENS[cur].group; go(p === cur ? 'home' : p, true); }
+
+/* tabs */
+document.getElementById('tabbar').innerHTML = TABS.map(t =>
+  '<div class="tab" data-g="' + t[0] + '" onclick="stack.length=0;go(\'' + t[0] + '\')"><div class="i">' + t[1] + '</div><div class="l">' + t[2] + '</div></div>').join('');
+
+/* sidebar map */
+(function(){
+  const groups = { home:'Home', dynasty:'Layer 1 · Manage — Dynasty', cut:'Layer 1 · Manage — CUT', social:'Layer 2 · Belong', you:'Layers 3–4 · Live It / Spend' };
+  let h = '';
+  for (const [g, label] of Object.entries(groups)){
+    h += '<div class="grp">' + label + '</div>';
+    for (const [id, sc] of Object.entries(SCREENS)) if (sc.group === g)
+      h += '<a data-id="' + id + '" onclick="stack.length=0;go(\'' + id + '\')">' + sc.label + '</a>';
+  }
+  document.getElementById('map').innerHTML = h;
+})();
+
+/* ================= INTERACTIONS ================= */
+function toast(t){ const el = document.getElementById('toast'); el.textContent = t; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2200); }
+function claimDaily(e){ e.stopPropagation(); if (S.claimed) return; S.claimed = true; S.streak += 0; celeb('🎁','RIVALRY PACK CLAIMED','Streak alive: week ' + S.streak + '. Two Rivalry Series players inside — open on any device.'); render('home'); go('home', true); }
+function readyUp(btn){ S.ready = true; celeb('✅','WEEK SUBMITTED','Your league sees you\'re ready. 10 of 12 now — Jess owes you one.'); }
+function hrs(d){
+  if (d > 0 && S.hours <= 0) { toast('No hours left in the pool'); return; }
+  if (d < 0 && S.vauxHours <= 0) return;
+  S.vauxHours += d; S.hours -= d;
+  document.getElementById('vhours').textContent = S.vauxHours;
+  document.getElementById('vpool').textContent = S.hours;
+}
+function scheduleVisit(btn){ document.getElementById('visitCk').classList.add('done'); document.getElementById('visitCk').textContent = '✓'; btn.textContent = 'VISIT LOCKED · SAT ✓'; btn.disabled = true; toast('Official visit set — +15% swing pending'); }
+function rebid(){
+  if (!S.outbid) return;
+  S.bid += 1000; S.outbid = false;
+  document.getElementById('bidNow').textContent = S.bid.toLocaleString();
+  const b = document.getElementById('rebidBtn'); b.textContent = 'YOU LEAD ✓'; b.style.background = 'var(--green)';
+  toast('Bid placed — we\'ll push if you\'re outbid');
+  setTimeout(() => { if (cur === 'cardd'){ S.outbid = true; render('cardd'); go('cardd', true); toast('⚠ Outbid again — 49.2K. One tap to answer.'); } }, 9000);
+}
+function vote(k){ S.poll = k;
+  const g = document.getElementById('pGo'), p = document.getElementById('pPunt');
+  g.textContent = 'GO · ' + (k==='go'?'79%':'77%'); p.textContent = 'PUNT · ' + (k==='go'?'21%':'23%');
+  (k==='go'?g:p).style.background = 'var(--gold)'; (k==='go'?g:p).style.color = '#171200';
+  toast('Locked in with 41K fans'); }
+function pick(i, side){
+  S.picks[i] = side;
+  ['a','b'].forEach(s => { const el = document.getElementById('pk' + i + s);
+    el.classList.toggle('ghost', s !== side);
+    el.style.background = s === side ? 'var(--team)' : ''; });
+}
+function sendGift(id){ if (S.giftsSent[id]) return; S.giftsSent[id] = 1;
+  const b = document.getElementById(id); b.textContent = 'SENT ✓'; b.disabled = true;
+  toast('Announced in chapter chat: Arun came through 🎁'); }
+function checkIn(){ S.checkedIn = true; S.streak = 10;
+  celeb('📍','CHECKED IN — THE SHOE','Game #48 · +250 pts · streak week 10 · The Game gold variant is now claimable.');
+  render('ledger'); go('ledger', true); }
+function claimTier(b){ b.textContent = '✓'; b.disabled = true; toast('Claimed — delivered to console inbox'); }
+function wrapNext(n){ document.querySelectorAll('.storycard').forEach(s => s.classList.remove('on')); document.getElementById('wrap' + n).classList.add('on'); }
+function wrapReset(){ document.querySelectorAll('.storycard').forEach((s,i) => s.classList.toggle('on', i === 0)); }
+
+/* sheets */
+function openSheet(html){ document.getElementById('sheet').innerHTML = '<div class="grab"></div>' + html; document.getElementById('sheet').classList.add('show'); document.getElementById('sheetMask').classList.add('show'); }
+function closeSheet(){ document.getElementById('sheet').classList.remove('show'); document.getElementById('sheetMask').classList.remove('show'); }
+function openFilters(){ openSheet('<div class="sec" style="padding:0 0 8px">MARKET FILTERS</div>' +
+  '<div style="display:flex;gap:8px;flex-wrap:wrap">' + ['Position','OVR 85+','OVR 90+','Promo only','Under 25K','Ending < 5m','Snipe watch'].map(f => '<span class="chip" onclick="this.classList.toggle(\'on\')">' + f + '</span>').join('') + '</div>' +
+  '<input placeholder="Search any player…" style="width:100%;margin-top:14px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;color:#fff;font-family:var(--body)">' +
+  '<button class="btn gold" style="width:100%;margin:14px 0 0" onclick="closeSheet();toast(\'Filters applied — 214 lots\')">APPLY</button>'); }
+function openCards(){ openSheet('<div class="sec" style="padding:0 0 8px">TRASH-TALK CARDS · RIVALRY SET</div>' +
+  ['🏠 RENT FREE','📉 STOCK DOWN','🕰️ 42–3 NEVER FORGET','🧊 ICE COLD TAKE'].map(c =>
+  '<button class="btn ghost" style="width:100%;margin:5px 0" onclick="closeSheet();toast(\'Card sent to the room 🃏\')">' + c + '</button>').join('')); }
+
+/* celebration + confetti */
+function celeb(emoji, title, text){
+  document.getElementById('celebEmoji').textContent = emoji;
+  document.getElementById('celebTitle').textContent = title;
+  document.getElementById('celebText').textContent = text;
+  document.getElementById('celebrate').classList.add('show');
+  confettiBurst();
+}
+function hideCeleb(){ document.getElementById('celebrate').classList.remove('show'); }
+function confettiBurst(){
+  const cv = document.getElementById('confetti'), ctx = cv.getContext && cv.getContext('2d');
+  if (!ctx) return;
+  cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+  const cols = [getComputedStyle(document.documentElement).getPropertyValue('--team'), '#F5B400', '#FFFFFF', getComputedStyle(document.documentElement).getPropertyValue('--team2')];
+  const ps = Array.from({length:90},()=>({x:cv.width/2, y:cv.height*0.42, vx:(Math.random()-.5)*11, vy:-Math.random()*10-3, s:Math.random()*7+3, c:cols[Math.random()*cols.length|0], r:Math.random()*6.28}));
+  let f = 0;
+  (function tick(){ f++; ctx.clearRect(0,0,cv.width,cv.height);
+    ps.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += .25; p.r += .1;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s); ctx.restore(); });
+    if (f < 110) requestAnimationFrame(tick); else ctx.clearRect(0,0,cv.width,cv.height); })();
+}
+
+/* countdown timers */
+setInterval(() => {
+  document.querySelectorAll('.timer[data-t]').forEach(el => {
+    let t = parseInt(el.dataset.t) - 1; if (t < 0) t = 0;
+    el.dataset.t = t;
+    const m = Math.floor(t/60), s = t%60;
+    el.textContent = m + ':' + String(s).padStart(2,'0');
+    if (t < 300) el.classList.add('hot');
+  });
+}, 1000);
+
+/* clock */
+document.getElementById('clock').textContent = new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}).replace(/\s?[AP]M/i,'');
+
+
+/* PWA: offline + install (only when served over http/https) */
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+
+/* boot */
+go('home');
+
+</script>
+</body>
+</html>
