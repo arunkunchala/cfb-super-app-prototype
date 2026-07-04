@@ -271,6 +271,15 @@ body::before{content:"";position:fixed;inset:0;
 canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
 .celebrate .btn{margin-top:22px;z-index:82}
 
+/* demo pill — always reachable prototype controls */
+.demopill{position:absolute;top:52px;right:12px;z-index:46;font-family:var(--score);font-size:9.5px;font-weight:700;
+  letter-spacing:1px;color:var(--mut);background:rgba(20,22,35,.92);border:1px solid var(--line);padding:5px 10px;
+  transform:skewX(-8deg);cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.4)}
+.demopill:active{transform:skewX(-8deg) translateY(1px)}
+@media (max-width:768px), (pointer:coarse) and (max-width:1024px){
+  .demopill{top:calc(env(safe-area-inset-top, 0px) + 10px)}
+}
+
 /* quick sync bar */
 .syncbar{position:absolute;left:14px;right:14px;bottom:92px;z-index:48;display:flex;align-items:center;gap:9px;
   background:linear-gradient(90deg,#1F1A08,#171303);border:1px solid var(--gold);padding:11px 15px;cursor:pointer;
@@ -344,6 +353,7 @@ canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
     </div>
     <div id="screens"><!--SCREENS--></div>
     <div class="tabbar" id="tabbar"></div>
+    <div class="demopill" onclick="openDemo()">⚙ DEMO</div>
     <div class="syncbar" id="syncbar" onclick="quickSync()" style="display:none"></div>
     <div class="toast" id="toast"></div>
     <div class="sheet-mask" id="sheetMask" onclick="closeSheet()"></div>
@@ -455,7 +465,20 @@ function gateScreen(id, need){
     '<button class="btn gold" onclick="setTier(2);toast(\'Webstore ↗ · Locker opens on first launch\')">BUY CFB 28 · OPENS YOUR LOCKER (' + S.lockerN + ')</button>' +
     card({k:'THE LEGIBLE GATE RULE', p:'Own CFB 28 on this persona → this tab lights up. No hidden checks, no silent failures — the condition is always on the button.'});
 }
-function setTier(n){ S.tier = n; toast(n === 1 ? 'Signed in — welcome to the fanbase' : n === 2 ? 'Entitlement verified ✓ — everything lights up' : 'Signed out'); go(cur, true); }
+function setTier(n){ S.tier = n; toast(n === 1 ? 'Signed in — welcome to the fanbase' : n === 2 ? 'Entitlement verified ✓ — everything lights up' : 'Signed out'); go(cur, true);
+  if (document.getElementById('sheet').classList.contains('show') && document.getElementById('demoSheet')) openDemo(); }
+function openDemo(){
+  openSheet('<div id="demoSheet"></div><div class="sec" style="padding:0 0 8px;margin:0 0 8px">PROTOTYPE DEMO CONTROLS</div>' +
+    '<div class="card" style="margin:0 0 10px"><div class="k gold">ACCESS TIER</div><div style="display:flex;gap:9px;margin-top:9px;flex-wrap:wrap">' +
+    [['0','T0 · OPEN'],['1','T1 · EA LOGIN'],['2','T2 · OWNS GAME']].map(t =>
+      '<span class="chip' + (S.tier === +t[0] ? ' on' : '') + '" onclick="setTier(' + t[0] + ')">' + t[1] + '</span>').join('') + '</div></div>' +
+    '<div class="card" style="margin:0 0 10px"><div class="k gold">ACTIVE PERSONA — ENTITLEMENT IS PER SEAT</div><div style="display:flex;gap:9px;margin-top:9px;flex-wrap:wrap">' +
+    Object.entries(PERSONAS).map(([k,p]) =>
+      '<span class="chip' + (S.persona === k ? ' on' : '') + '" onclick="S.persona=\'' + k + '\';openDemo();go(cur,true)">' + p.badge + (p.owns ? ' ✓' : p.legacy ? ' ↩' : ' ·') + '</span>').join('') + '</div></div>' +
+    '<div class="card" style="margin:0 0 10px"><div class="k gold">CONSOLE PRESENCE</div>' +
+    '<button class="btn ghost inline" style="margin-top:9px" onclick="closeSheet();togglePresence()">' + (S.presence ? '🎮 END PS5 SESSION' : '🎮 SIMULATE PS5 SESSION') + '</button></div>' +
+    '<button class="btn gold" style="width:100%;margin:4px 0 0" onclick="closeSheet()">DONE</button>');
+}
 function markDraft(area){
   S.drafts++; if (!S.draftAreas.includes(area)) S.draftAreas.push(area);
   updateSyncbar(); toast('Staged as draft — Quick Sync when ready');
