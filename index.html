@@ -291,7 +291,6 @@ canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
 .ck.done{background:var(--green);border-color:var(--green)}
 .storycard{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;padding:40px 30px;cursor:pointer}
 .storycard.on{display:flex}
-
 /* ============ MOBILE DEPLOY (auto-scale, safe areas) ============ */
 @media (max-width:768px), (pointer:coarse) and (max-width:1024px){
   .stage{padding:0;gap:0}
@@ -327,7 +326,7 @@ canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
 <div class="stage">
   <div class="side">
     <h1>CFB SUPER APP</h1>
-    <div class="sub">Clickable UX prototype · Liquidnitro × EA · Every section is navigable inside the phone. Use this map to jump.</div>
+    <div class="sub">Clickable UX prototype · v3 (five layers, CFB 28 target) · Liquidnitro × EA · Every section is navigable inside the phone. Layer 5 "Connected" is demoed via Settings → Access Model demo controls.</div>
     <div id="map"></div>
   </div>
   <div class="phone">
@@ -366,8 +365,9 @@ const S = {
   drafts: 0, draftAreas: [], lastSync: null, lockerN: 12,
 };
 const PERSONAS = {
-  ps5: { label:'PS5 · Coach Arun', badge:'PS5', owns:true,  snap:'Dynasty S4 W13 · CUT 89 OVR · 2 leagues' },
-  pc:  { label:'PC · Coach Arun',  badge:'PC',  owns:false, snap:'No game on this platform — Tier 1 seat' },
+  ps5:  { label:'PS5 · Coach Arun',  badge:'PS5',  owns:true,  snap:'Dynasty S4 W13 · CUT 89 OVR · 2 leagues' },
+  pc:   { label:'PC · Coach Arun',   badge:'PC',   owns:false, snap:'No game on this platform — Tier 1 seat' },
+  xbox: { label:'Xbox · Coach Arun', badge:'XBOX', owns:false, legacy:true, snap:'Owned CFB 27 · 13–1 legacy dynasty · Wrapped saved' },
 };
 /* effective tier for game-state features = account tier capped by persona entitlement */
 function mTier(){ return PERSONAS[S.persona].owns ? S.tier : Math.min(S.tier, 1); }
@@ -433,12 +433,15 @@ function gateScreen(id, need){
       p:'Team flair, check-ins, your Fan Ledger, chapters, pick’em, streaks and the Fan Pass free track. One EA ID, everywhere.'}) +
     '<button class="btn gold" onclick="setTier(1)">SIGN IN WITH EA ID · FREE</button>' +
     card({k:'WHY IT\'S OPEN', p:'Identity and community are never paywalled. Only features that touch game state need the game.'});
+  const p = PERSONAS[S.persona];
+  const winback = p.legacy ? card({cls:'hi', k:'WELCOME BACK, COACH', kc:'gold', t:'You ran a 13–1 dynasty in CFB 27',
+      p:'Your Wrapped, your Fan Ledger and your records carried over — they\'re waiting to continue in CFB 28. Upgrade offer: launch bundle + your Locker (' + S.lockerN + ' items) opens day one.'}) : '';
   const spectate = id === 'league'
     ? card({k:'SPECTATE MODE 👁', kc:'gold', t:'Big Ten Boys · 9 of 12 ready', p:'You can watch Dev\'s league live — ready status, standings, the drama. Acting in it needs the game.'})
     : id === 'market'
     ? card({k:'SPECTATE MODE 👁', kc:'gold', t:'CUT price trends · view only', p:'96 OVR QBs ▼18% this week. Watch the market move; bidding needs the game on this persona.'})
     : card({k:'PREVIEW 👁', kc:'gold', t:'Watch-only until this persona owns CFB 28', p:'Everything here reads and writes real game state — recruiting boards, depth charts, live auctions.'});
-  return head + spectate +
+  return head + winback + spectate +
     card({cls:'hi', k:'YOUR LOCKER IS FILLING', kc:'team', t: S.lockerN + ' earned items are waiting in CFB 28',
       p:'Check-in drops, chapter war prizes, pick’em rewards — banked, never lost. They unlock in-game the moment you own it.'}) +
     '<button class="btn" onclick="setTier(2)">START EA PLAY TRIAL · PLAYS IN MINUTES</button>' +
@@ -467,12 +470,17 @@ function openPersonas(){
   openSheet('<div class="sec" style="padding:0 0 8px;margin:0 0 8px">WHICH COACH ARE YOU TODAY?</div>' +
     Object.entries(PERSONAS).map(([k,p]) =>
     '<div class="card' + (S.persona===k?' hi':'') + '" style="margin:0 0 10px;cursor:pointer" onclick="setPersona(\'' + k + '\')">' +
-    '<div class="k ' + (p.owns?'green':'') + '">' + p.badge + ' · ' + (p.owns ? 'CFB 28 ENTITLED' : 'NO GAME — TIER 1') + (S.persona===k?' · ACTIVE':'') + '</div>' +
+    '<div class="k ' + (p.owns?'green':p.legacy?'gold':'') + '">' + p.badge + ' · ' + (p.owns ? 'CFB 28 ENTITLED' : p.legacy ? 'OWNED CFB 27 — WIN-BACK' : 'NO GAME — TIER 1') + (S.persona===k?' · ACTIVE':'') + '</div>' +
     '<h3>' + p.label + '</h3><p>' + p.snap + '</p></div>').join('') +
     '<p style="font-size:10.5px;color:var(--mut)">Fan layer (ledger, chapters, streaks) follows your account everywhere. Game state follows the persona.</p>');
 }
 function setPersona(k){ S.persona = k; closeSheet(); toast('Active persona: ' + PERSONAS[k].label); go(cur, true); }
-function togglePresence(){ S.presence = !S.presence; toast(S.presence ? 'PS5 session detected — Live Companion Mode' : 'Console session ended'); go(cur, true); }
+function togglePresence(){
+  S.presence = !S.presence;
+  if (S.presence){ toast('PS5 session detected — Live Companion Mode'); }
+  else { celeb('🎬','SESSION RECAP READY','OSU 28 – MICH 17 · 342 pass yds · recap card auto-generated the moment you put the controller down. One tap to share.'); }
+  go(cur, true);
+}
 
 /* ================= SCREENS ================= */
 const SCREENS = {};
@@ -918,7 +926,7 @@ document.getElementById('tabbar').innerHTML = TABS.map(t =>
 
 /* sidebar map */
 (function(){
-  const groups = { home:'Home', dynasty:'Layer 1 · Manage — Dynasty', cut:'Layer 1 · Manage — CUT', social:'Layer 2 · Belong', you:'Layers 3–4 · Live It / Spend' };
+  const groups = { home:'Home', dynasty:'Layer 1 · Manage — Dynasty', cut:'Layer 1 · Manage — CUT', social:'Layer 2 · Belong', you:'Layers 3–5 · Live It / Spend / Connected' };
   let h = '';
   for (const [g, label] of Object.entries(groups)){
     h += '<div class="grp">' + label + '</div>';
