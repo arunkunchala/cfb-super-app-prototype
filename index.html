@@ -280,6 +280,16 @@ canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
   .demopill{top:calc(env(safe-area-inset-top, 0px) + 10px)}
 }
 
+/* live companion pill */
+.comppill{position:absolute;top:52px;left:12px;z-index:46;display:flex;align-items:center;gap:6px;
+  font-family:var(--score);font-size:9.5px;font-weight:700;letter-spacing:1px;color:#8FE8B4;
+  background:rgba(10,26,17,.94);border:1px solid var(--green);padding:5px 10px;transform:skewX(-8deg);cursor:pointer;
+  box-shadow:2px 2px 0 rgba(0,0,0,.4), 0 0 16px -4px rgba(47,191,113,.5)}
+.comppill .cdot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pul 1.2s infinite}
+@media (max-width:768px), (pointer:coarse) and (max-width:1024px){
+  .comppill{top:calc(env(safe-area-inset-top, 0px) + 10px)}
+}
+
 /* quick sync bar */
 .syncbar{position:absolute;left:14px;right:14px;bottom:92px;z-index:48;display:flex;align-items:center;gap:9px;
   background:linear-gradient(90deg,#1F1A08,#171303);border:1px solid var(--gold);padding:11px 15px;cursor:pointer;
@@ -354,6 +364,7 @@ canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
     <div id="screens"><!--SCREENS--></div>
     <div class="tabbar" id="tabbar"></div>
     <div class="demopill" onclick="openDemo()">⚙ DEMO</div>
+    <div class="comppill" id="comppill" onclick="openCompanion()" style="display:none"><span class="cdot"></span>🎮 SYNC</div>
     <div class="syncbar" id="syncbar" onclick="quickSync()" style="display:none"></div>
     <div class="toast" id="toast"></div>
     <div class="sheet-mask" id="sheetMask" onclick="closeSheet()"></div>
@@ -437,10 +448,17 @@ function personaChip(){
   return '<span class="chip" style="margin-top:10px" onclick="openPersonas()">🎮 ' + p.badge + ' · ' +
     (p.owns ? 'ENTITLED' : 'NO GAME') + ' ▾</span>';
 }
-function liveBanner(){
-  if (!S.presence) return '';
-  return '<div class="card field" style="padding:11px 14px"><div class="k gold">LIVE COMPANION MODE</div>' +
-    '<p style="margin-top:4px;color:#D9F2E4">Your PS5 session is live. Edits stage as drafts — Quick Sync applies them between plays. Non-urgent alerts muted.</p></div>';
+function liveBanner(){ return ''; } /* replaced by the companion pill */
+function openCompanion(){
+  openSheet('<div class="sec" style="padding:0 0 8px;margin:0 0 8px">LIVE COMPANION MODE</div>' +
+    '<div class="card field" style="margin:0 0 10px"><div class="k gold">PS5 SESSION ACTIVE · ' + PERSONAS[S.persona].badge + '</div>' +
+    '<p style="margin-top:5px;color:#D9F2E4">Phone does the meta, console does the football.</p></div>' +
+    '<div class="card" style="margin:0 0 10px">' +
+    '<div class="checkrow"><div class="ck done">✓</div>Edits stage as drafts — Quick Sync applies them between plays</div>' +
+    '<div class="checkrow"><div class="ck done">✓</div>Sections open on console are leased — read-only here</div>' +
+    '<div class="checkrow"><div class="ck done">✓</div>Non-urgent notifications muted for the session</div>' +
+    '<div class="checkrow"><div class="ck done">✓</div>Recap card auto-generates when the session ends</div></div>' +
+    '<button class="btn ghost" style="width:100%;margin:0" onclick="closeSheet();togglePresence()">🎮 END PS5 SESSION</button>');
 }
 function gateScreen(id, need){
   const sc = SCREENS[id];
@@ -951,6 +969,7 @@ function go(id, isBack){
   pill.style.display = show ? 'flex' : 'none';
   pill.classList.remove('hide');
   document.querySelector('.phone').classList.toggle('has-live', show);
+  document.getElementById('comppill').style.display = (S.presence && id !== 'wrapped') ? 'flex' : 'none';
 }
 function back(){ const p = stack.pop() || SCREENS[cur].group; go(p === cur ? 'home' : p, true); }
 
