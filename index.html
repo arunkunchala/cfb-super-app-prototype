@@ -233,7 +233,14 @@ body::before{content:"";position:fixed;inset:0;
 /* live pill */
 .livepill{position:absolute;top:52px;left:50%;transform:translateX(-50%) skewX(-8deg);z-index:45;display:flex;align-items:center;gap:7px;
   background:linear-gradient(90deg,#1A0505,#000 40%);border:1px solid var(--live);padding:7px 14px;cursor:pointer;
-  box-shadow:0 4px 18px rgba(255,59,48,.35), 2px 2px 0 rgba(0,0,0,.5)}
+  box-shadow:0 4px 18px rgba(255,59,48,.35), 2px 2px 0 rgba(0,0,0,.5);
+  transition:opacity .22s, transform .22s}
+.livepill.hide{opacity:0;transform:translateX(-50%) skewX(-8deg) translateY(-14px);pointer-events:none}
+/* content reserves space below the live pill — no overlap, ever */
+.phone.has-live .screen{padding-top:102px}
+@media (max-width:768px), (pointer:coarse) and (max-width:1024px){
+  .phone.has-live .screen{padding-top:calc(env(safe-area-inset-top, 0px) + 62px)}
+}
 .livepill .pulse{width:7px;height:7px;border-radius:50%;background:var(--live);animation:pul 1.2s infinite}
 @keyframes pul{50%{opacity:.3}}
 .livepill b{font-family:var(--score);font-size:11px;letter-spacing:.5px}
@@ -916,7 +923,11 @@ function go(id, isBack){
   const g = SCREENS[id].group;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.g === g));
   document.querySelectorAll('.side a').forEach(a => a.classList.toggle('on', a.dataset.id === id));
-  document.getElementById('livepill').style.display = (id === 'matchday' || id === 'wrapped') ? 'none' : 'flex';
+  const pill = document.getElementById('livepill');
+  const show = !(id === 'matchday' || id === 'wrapped');
+  pill.style.display = show ? 'flex' : 'none';
+  pill.classList.remove('hide');
+  document.querySelector('.phone').classList.toggle('has-live', show);
 }
 function back(){ const p = stack.pop() || SCREENS[cur].group; go(p === cur ? 'home' : p, true); }
 
@@ -1020,6 +1031,17 @@ setInterval(() => {
     if (t < 300) el.classList.add('hot');
   });
 }, 1000);
+
+/* live pill: auto-hide on scroll down, return on scroll up */
+document.getElementById('screens').addEventListener('scroll', e => {
+  const el = e.target; if (!el.classList || !el.classList.contains('screen')) return;
+  const pill = document.getElementById('livepill');
+  if (pill.style.display === 'none') return;
+  const y = el.scrollTop, ly = el._ly || 0;
+  if (y > ly + 4 && y > 24) pill.classList.add('hide');
+  else if (y < ly - 4 || y <= 24) pill.classList.remove('hide');
+  el._ly = y;
+}, true);
 
 /* clock */
 document.getElementById('clock').textContent = new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}).replace(/\s?[AP]M/i,'');
