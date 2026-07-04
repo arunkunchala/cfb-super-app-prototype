@@ -280,15 +280,15 @@ canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
   .demopill{top:calc(env(safe-area-inset-top, 0px) + 10px)}
 }
 
-/* live companion pill */
-.comppill{position:absolute;top:52px;left:12px;z-index:46;display:flex;align-items:center;gap:6px;
-  font-family:var(--score);font-size:9.5px;font-weight:700;letter-spacing:1px;color:#8FE8B4;
-  background:rgba(10,26,17,.94);border:1px solid var(--green);padding:5px 10px;transform:skewX(-8deg);cursor:pointer;
-  box-shadow:2px 2px 0 rgba(0,0,0,.4), 0 0 16px -4px rgba(47,191,113,.5)}
-.comppill .cdot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pul 1.2s infinite}
-@media (max-width:768px), (pointer:coarse) and (max-width:1024px){
-  .comppill{top:calc(env(safe-area-inset-top, 0px) + 10px)}
-}
+/* smart pill states */
+.livepill.sync{border-color:var(--green);box-shadow:0 4px 18px rgba(47,191,113,.3), 2px 2px 0 rgba(0,0,0,.5);background:linear-gradient(90deg,#07180E,#000 40%)}
+.livepill.sync .pulse{background:var(--green)}
+.livepill.social{border-color:var(--gold);box-shadow:0 4px 18px rgba(245,180,0,.3), 2px 2px 0 rgba(0,0,0,.5);background:linear-gradient(90deg,#1A1405,#000 40%)}
+.livepill.social .pulse{background:var(--gold)}
+.livepill.flip{animation:pillflip .38s cubic-bezier(.2,1.2,.4,1)}
+@keyframes pillflip{from{transform:translateX(-50%) skewX(-8deg) translateY(10px);opacity:0}to{transform:translateX(-50%) skewX(-8deg) translateY(0);opacity:1}}
+.pbadge{font-family:var(--score);font-size:9px;font-weight:800;color:#171200;background:var(--grad-gold);
+  padding:2px 6px;margin-left:2px;border-radius:2px}
 
 /* quick sync bar */
 .syncbar{position:absolute;left:14px;right:14px;bottom:92px;z-index:48;display:flex;align-items:center;gap:9px;
@@ -358,13 +358,12 @@ canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
   <div class="phone">
     <div class="notch"></div>
     <div class="status"><span id="clock">9:41</span><span class="r">5G · 100%</span></div>
-    <div class="livepill" id="livepill" onclick="go('matchday')" style="display:none">
-      <div class="pulse"></div><b>LIVE · OSU 21 – MICH 17 · Q3</b>
+    <div class="livepill" id="livepill" onclick="openPillFeed()" style="display:none">
+      <div class="pulse" id="pillDot"></div><b id="pillTxt">LIVE · OSU 21 – MICH 17 · Q3</b><span class="pbadge" id="pillBadge" style="display:none"></span>
     </div>
     <div id="screens"><!--SCREENS--></div>
     <div class="tabbar" id="tabbar"></div>
     <div class="demopill" onclick="openDemo()">⚙ DEMO</div>
-    <div class="comppill" id="comppill" onclick="openCompanion()" style="display:none"><span class="cdot"></span>🎮 SYNC</div>
     <div class="syncbar" id="syncbar" onclick="quickSync()" style="display:none"></div>
     <div class="toast" id="toast"></div>
     <div class="sheet-mask" id="sheetMask" onclick="closeSheet()"></div>
@@ -448,7 +447,68 @@ function personaChip(){
   return '<span class="chip" style="margin-top:10px" onclick="openPersonas()">🎮 ' + p.badge + ' · ' +
     (p.owns ? 'ENTITLED' : 'NO GAME') + ' ▾</span>';
 }
-function liveBanner(){ return ''; } /* replaced by the companion pill */
+function liveBanner(){ return ''; } /* replaced by the smart pill */
+
+/* ---------- SMART PILL: one ambient attention channel ---------- */
+/* priority: session (P0, owns the pill while connected) > live game (P1) > social (P2) > market (P3) */
+const PILL = { feed: [], badge: 0, takeover: null, timer: null };
+const PILL_EVENTS = [
+  { pr:1, cls:'live',   txt:'🏈 TD OHIO STATE — 28–17',            go:'matchday' },
+  { pr:2, cls:'social', txt:'💬 Dev: we advancing tonight or what?', go:'league' },
+  { pr:3, cls:'live',   txt:'⚠ OUTBID · 94 J. Smith · 11:58',       go:'cardd' },
+  { pr:2, cls:'social', txt:'🎁 Lena sent you a Rivalry Pack',       go:'chapter' },
+  { pr:1, cls:'live',   txt:'📊 4TH & 1 — 41K fans voting NOW',      go:'matchday' },
+  { pr:2, cls:'social', txt:'🔥 Chapter war: #214 takes the lead!',  go:'chapter' },
+];
+function pillAmbient(){
+  if (S.presence) return { cls:'sync', txt:'🎮 SYNC · PS5 · ' + (S.drafts ? S.drafts + ' DRAFT' + (S.drafts>1?'S':'') + ' STAGED' : 'CONNECTED'), go:null };
+  return { cls:'live', txt:'LIVE · OSU 21 – MICH 17 · Q3', go:'matchday' };
+}
+function renderPill(msg){
+  const pill = document.getElementById('livepill');
+  const m = msg || PILL.takeover || pillAmbient();
+  pill.classList.remove('sync','social');
+  if (m.cls === 'sync') pill.classList.add('sync');
+  if (m.cls === 'social') pill.classList.add('social');
+  document.getElementById('pillTxt').textContent = m.txt;
+  const b = document.getElementById('pillBadge');
+  b.style.display = PILL.badge > 0 ? 'inline-block' : 'none';
+  b.textContent = '+' + PILL.badge;
+}
+function pushPill(e){
+  PILL.feed.unshift(Object.assign({ at: new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) }, e));
+  PILL.feed = PILL.feed.slice(0, 8);
+  const pill = document.getElementById('livepill');
+  if (S.presence){
+    /* session owns the pill — everything else queues as a badge */
+    PILL.badge++; renderPill();
+    pill.classList.remove('flip'); void pill.offsetWidth; pill.classList.add('flip');
+    return;
+  }
+  PILL.takeover = e; renderPill();
+  pill.classList.remove('flip'); void pill.offsetWidth; pill.classList.add('flip');
+  clearTimeout(PILL.timer);
+  PILL.timer = setTimeout(() => { PILL.takeover = null; renderPill(); }, 4500);
+}
+function openPillFeed(){
+  const cur_ = PILL.takeover || pillAmbient();
+  openSheet('<div class="sec" style="padding:0 0 8px;margin:0 0 8px">LIVE FEED</div>' +
+    (S.presence
+      ? '<div class="card field" style="margin:0 0 10px;cursor:pointer" onclick="closeSheet();openCompanion()"><div class="k gold">🎮 SESSION PRIORITY · PS5</div>' +
+        '<p style="margin-top:4px;color:#D9F2E4">' + (S.drafts ? S.drafts + ' draft(s) staged — Quick Sync when ready.' : 'Connected. Drafts sync between plays.') + ' Tap for session controls.</p></div>'
+      : '<div class="card hi" style="margin:0 0 10px;cursor:pointer" onclick="closeSheet();go(\'matchday\')"><div class="k red">🔴 LIVE · THE GAME</div>' +
+        '<h3>OSU 21 – MICH 17 · Q3</h3><p>41,208 in the matchday room — tap to join.</p></div>') +
+    (PILL.feed.length
+      ? PILL.feed.map((f,i) => '<div class="card" style="margin:0 0 8px;padding:11px 14px;cursor:pointer" onclick="closeSheet();go(\'' + f.go + '\')">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:600">' + f.txt + '</span>' +
+          '<span style="font-size:9px;color:var(--mut);flex:none;margin-left:8px">' + f.at + '</span></div></div>').join('')
+      : '<p style="font-size:11px;color:var(--mut)">No alerts yet — commentary, chapter chat and market events stream here.</p>') +
+    '<button class="btn ghost" style="width:100%;margin:6px 0 0" onclick="PILL.badge=0;renderPill();closeSheet()">MARK ALL SEEN</button>');
+  PILL.badge = 0; renderPill();
+}
+/* demo stream: an event lands every 8s */
+let _evIdx = 0;
+setTimeout(function tickEv(){ pushPill(PILL_EVENTS[_evIdx++ % PILL_EVENTS.length]); setTimeout(tickEv, 8000); }, 5000);
 function openCompanion(){
   openSheet('<div class="sec" style="padding:0 0 8px;margin:0 0 8px">LIVE COMPANION MODE</div>' +
     '<div class="card field" style="margin:0 0 10px"><div class="k gold">PS5 SESSION ACTIVE · ' + PERSONAS[S.persona].badge + '</div>' +
@@ -499,12 +559,12 @@ function openDemo(){
 }
 function markDraft(area){
   S.drafts++; if (!S.draftAreas.includes(area)) S.draftAreas.push(area);
-  updateSyncbar(); toast('Staged as draft — Quick Sync when ready');
+  updateSyncbar(); renderPill(); toast('Staged as draft — Quick Sync when ready');
 }
 function quickSync(){
   if (!S.drafts) return;
   const n = S.drafts, t = new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
-  S.drafts = 0; S.draftAreas = []; S.lastSync = t; updateSyncbar();
+  S.drafts = 0; S.draftAreas = []; S.lastSync = t; updateSyncbar(); renderPill();
   celeb('🔄','SYNCED TO YOUR PS5', n + ' change' + (n>1?'s':'') + ' applied as one atomic batch · ' + t + '. Your console menus just refreshed.');
 }
 function updateSyncbar(){
@@ -525,6 +585,7 @@ function openPersonas(){
 function setPersona(k){ S.persona = k; closeSheet(); toast('Active persona: ' + PERSONAS[k].label); go(cur, true); }
 function togglePresence(){
   S.presence = !S.presence;
+  PILL.takeover = null; clearTimeout(PILL.timer);
   if (S.presence){ toast('PS5 session detected — Live Companion Mode'); }
   else { celeb('🎬','SESSION RECAP READY','OSU 28 – MICH 17 · 342 pass yds · recap card auto-generated the moment you put the controller down. One tap to share.'); }
   go(cur, true);
@@ -969,7 +1030,7 @@ function go(id, isBack){
   pill.style.display = show ? 'flex' : 'none';
   pill.classList.remove('hide');
   document.querySelector('.phone').classList.toggle('has-live', show);
-  document.getElementById('comppill').style.display = (S.presence && id !== 'wrapped') ? 'flex' : 'none';
+  renderPill();
 }
 function back(){ const p = stack.pop() || SCREENS[cur].group; go(p === cur ? 'home' : p, true); }
 
