@@ -62,11 +62,74 @@ body::before{content:"";position:fixed;inset:0;
     var(--bg);
   display:none;scrollbar-width:none}
 .screen::-webkit-scrollbar{display:none}
-.screen.on{display:block;animation:in .22s ease}
-@keyframes in{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
-.screen.back-anim{animation:inL .22s ease}
-@keyframes inL{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.screen.on{display:block;animation:wipe .3s cubic-bezier(.3,.8,.3,1)}
+@keyframes wipe{from{clip-path:polygon(0 0,0 0,-18% 100%,0 100%);opacity:.6}to{clip-path:polygon(0 0,118% 0,100% 100%,0 100%);opacity:1}}
+.screen.back-anim{animation:wipeL .3s cubic-bezier(.3,.8,.3,1)}
+@keyframes wipeL{from{clip-path:polygon(100% 0,100% 0,100% 100%,118% 100%);opacity:.6}to{clip-path:polygon(-18% 0,100% 0,100% 100%,0 100%);opacity:1}}
+/* per-tab scene grades — each place has its own light */
+.screen[data-g="dynasty"]{background:
+  radial-gradient(120% 60% at 80% -15%, rgba(201,120,48,.10), transparent 55%),
+  repeating-linear-gradient(90deg, transparent 0 77px, rgba(255,255,255,.016) 77px 78px), #0E0C10}
+.screen[data-g="cut"]{background:
+  radial-gradient(120% 60% at 20% -15%, rgba(24,80,48,.16), transparent 55%),
+  repeating-linear-gradient(90deg, transparent 0 77px, rgba(255,255,255,.016) 77px 78px), #0A0E0C}
+.screen[data-g="social"]{background:
+  radial-gradient(120% 60% at 50% -15%, rgba(201,48,44,.10), transparent 55%),
+  repeating-linear-gradient(90deg, transparent 0 77px, rgba(255,255,255,.016) 77px 78px), #100C12}
+.screen[data-g="you"]{background:
+  radial-gradient(120% 60% at 50% -15%, rgba(245,180,0,.08), transparent 55%),
+  repeating-linear-gradient(90deg, transparent 0 77px, rgba(255,255,255,.016) 77px 78px), #0F0D0A}
 .pad{padding:0 18px}
+
+/* stadium scene (home) */
+.stadium{position:relative;margin:0 0 6px;padding:18px 18px 10px;overflow:hidden;min-height:150px;
+  background:
+    radial-gradient(45% 34% at 18% 0%, rgba(255,244,214,.16), transparent 70%),
+    radial-gradient(45% 34% at 82% 0%, rgba(255,244,214,.16), transparent 70%),
+    linear-gradient(180deg, #0A0F1E 0%, #0D1524 45%, #0E2417 78%, #103020 100%)}
+.stadium::before{content:"";position:absolute;left:-12%;right:-12%;bottom:-58px;height:110px;
+  background:repeating-linear-gradient(90deg, transparent 0 46px, rgba(255,255,255,.16) 46px 48px),
+    linear-gradient(180deg,#155232,#0C3B22);
+  transform:perspective(220px) rotateX(58deg)}
+.stadium::after{content:"";position:absolute;left:0;right:0;top:34%;height:16px;
+  background:repeating-radial-gradient(circle at 8px 8px, rgba(255,255,255,.10) 0 1.6px, transparent 1.6px 9px);opacity:.7}
+.stadium .kick{display:inline-block;font-family:var(--score);font-size:10px;font-weight:700;letter-spacing:3px;
+  color:#171200;text-transform:uppercase;background:var(--grad-gold);padding:4px 12px;transform:skewX(-8deg);
+  box-shadow:2px 2px 0 rgba(0,0,0,.45);position:relative;z-index:2}
+.stadium h2{font-family:var(--display);font-size:37px;font-weight:800;text-transform:uppercase;font-style:italic;
+  line-height:.92;margin-top:10px;position:relative;z-index:2;text-shadow:3px 3px 0 rgba(0,0,0,.55)}
+.stadium .sub{font-size:11.5px;color:#B9C2D4;margin-top:7px;position:relative;z-index:2}
+
+/* the snap deck — one decision at a time */
+.snap{margin:12px 18px 10px;padding:18px 16px 16px;position:relative;overflow:hidden;
+  background:
+    radial-gradient(130% 150% at 88% -30%, var(--team-glow), transparent 55%),
+    linear-gradient(100deg,#1C1F31,#141625 70%);
+  border:1px solid var(--team);clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%);
+  box-shadow:0 10px 30px -10px rgba(0,0,0,.7)}
+.snap .k{font-family:var(--score);font-size:10px;font-weight:700;letter-spacing:2.4px;color:var(--gold);text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.snap .k::before{content:"";width:13px;height:8px;background:var(--grad-gold);transform:skewX(-22deg)}
+.snap h3{font-family:var(--display);font-size:25px;font-weight:800;font-style:italic;text-transform:uppercase;line-height:.98;margin-top:9px}
+.snap p{font-size:12px;color:#C3CBDB;margin-top:8px;line-height:1.5}
+.snap .acts{display:flex;gap:9px;margin-top:14px}
+.snap.enter{animation:snapin .32s cubic-bezier(.2,1.1,.35,1)}
+@keyframes snapin{from{transform:translateX(30px) rotate(.6deg);opacity:0}to{transform:none;opacity:1}}
+.dots{display:flex;gap:6px;justify-content:center;padding:2px 0 4px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--gold);box-shadow:0 0 8px rgba(245,180,0,.6)}
+.upnext{display:flex;gap:9px;padding:0 18px 4px}
+.upnext .un{flex:1;background:var(--surface);border:1px solid var(--line);padding:9px 11px;cursor:pointer;
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
+.upnext .un .l{font-family:var(--score);font-size:8px;font-weight:700;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase}
+.upnext .un .t{font-size:10.5px;font-weight:700;margin-top:3px;color:var(--mut)}
+
+/* bottom-line ticker */
+.ticker{margin:10px 0 0;background:#05060C;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  overflow:hidden;white-space:nowrap;padding:7px 0}
+.ticker span{display:inline-block;font-family:var(--score);font-size:10.5px;font-weight:600;letter-spacing:1px;color:var(--mut);
+  animation:tick 26s linear infinite;padding-left:100%}
+@keyframes tick{to{transform:translateX(-100%)}}
+.ticker b{color:var(--gold)}
 
 /* headers — hero banner (game UI) */
 .hero{position:relative;margin:4px 0 12px;padding:16px 18px 20px;overflow:hidden;
@@ -596,27 +659,50 @@ const SCREENS = {};
 const G = { home:'home', dynasty:'dynasty', cut:'cut', social:'social', you:'you' };
 
 /* ---------- HOME ---------- */
-SCREENS.home = { group:'home', label:'Home · Action Feed', html: () => {
-  const t = THEMES[S.theme];
-  return hub('SATURDAY · NOV 28 · RIVALRY WEEK', 'GAMEDAY, COACH', 'Ohio State Buckeyes · Chapter #214 · <b style="color:var(--gold)">🔥 ' + S.streak + '-week streak</b>')
-  + card({cls:'hi tap', k:'YOUR DYNASTY · WEEK 13 · ADVANCE LOCKED', kc:'team', go:'league',
-      t:'4 of 12 coaches ready — league is waiting',
-      p:'The Game is on the line in your save too. Tap to see who\'s holding it up.'})
-  + card({k: S.claimed ? 'DAILY CLAIM · DONE FOR TODAY' : 'DAILY CLAIM · RIVALRY WEEK', kc:'gold',
-      t: S.claimed ? 'Rivalry Pack claimed ✓' : 'Rivalry Pack is waiting',
-      body:'<button class="btn gold inline" style="margin-top:9px" ' + (S.claimed?'disabled':'') +
-      ' onclick="claimDaily(event)">' + (S.claimed ? 'CLAIMED' : 'CLAIM · KEEP THE STREAK') + '</button>'})
-  + card({cls:'tap', k:'PICK’EM · CLOSES SAT 12:00', kc:'green', go:'pickem',
-      t: S.pickCount + ' of 10 picked', p:'Your chapter is 2nd in fanbase picks. Finish your slate.'})
-  + card({cls:'tap', k:'RECRUITING · ' + S.hours + ' HRS LEFT THIS WEEK', go:'recruiting',
-      t:'5★ QB Marcus Vaux — visit unscheduled', body:'<div style="margin-top:8px">' + bar(62,'green') + '</div>'})
-  + card({cls:'tap', k:'CUT AUCTION · ENDS SOON', kc:'red', go:'cardd',
-      t: S.outbid ? 'You\'ve been outbid — 94 OVR J. Smith' : 'You lead — 94 OVR J. Smith',
-      p:'One tap to rebid before the timer runs out.'})
-  + card({cls:'tap field', k:'MATCHDAY ROOM · LIVE NOW', kc:'gold', go:'matchday',
-      t:'The Game: OSU vs Michigan', p:'41,208 fans in the room · polls, hype drops, trash talk'})
-  + card({k:'CAMPUS WIRE', t:'CFP rankings drop tonight · 7:00 ET',
-      p:'Your dynasty\'s reveal mirrors the real one — Tuesday tradition.'});
+/* ---------- THE SNAP DECK: one decision at a time ---------- */
+function snapQueue(){
+  const q = [];
+  if (!S.ready) q.push({ k:'YOUR LEAGUE IS WAITING · WEEK 13', t:'FOUR COACHES SHORT OF KICKOFF',
+    p:'The Game is set in your save too — but the week can’t advance until everyone’s in. You’re one of the holdouts, Coach.',
+    cta:'RALLY THE LEAGUE', go:'league' });
+  if (!S.claimed) q.push({ k:'THE EQUIPMENT ROOM · RIVALRY WEEK', t:'A PACK WITH YOUR NAME ON IT',
+    p:'Week ' + S.streak + ' of your streak. The equipment room’s holding a Rivalry Pack for you — don’t leave it on the shelf.',
+    cta:'CLAIM IT', act:'claimDaily(event)' });
+  q.push({ k:'RECRUITING · THE PHONES ARE HOT', t:'BAMA IS COMING FOR VAUX',
+    p:'Your 5-star QB still doesn’t have an official visit — and Rivalry Week is the biggest stage you’ll ever get him on.',
+    cta:'SET THE VISIT', go:'recruit' });
+  if (S.outbid) q.push({ k:'THE MARKET · MINUTES LEFT', t:'SOMEONE WANTS YOUR EDGE RUSHER',
+    p:'You’ve been outbid on 94 OVR J. Smith with the clock running. Answer, or watch him suit up for somebody else.',
+    cta:'ANSWER THE BID', go:'cardd' });
+  q.push({ k:'PICK’EM · CLOSES AT NOON', t:'FOUR GAMES STILL ON YOUR CARD',
+    p:'Your chapter is one hot Saturday from top of the fanbase board. Finish the slate before kickoff locks it.',
+    cta:'PUNCH YOUR TICKET', go:'pickem' });
+  if (!q.length) q.push({ k:'CLEAN DESK', t:'NOTHING NEEDS YOU, COACH',
+    p:'The board is set, the bids are safe, the picks are in. Go enjoy the football.',
+    cta:'JOIN THE MATCHDAY ROOM', go:'matchday' });
+  return q;
+}
+function snapSkip(){ const n = snapQueue().length; S.snapIdx = ((S.snapIdx||0) + 1) % n; render('home'); go('home', true); }
+function snapJump(i){ S.snapIdx = i; render('home'); go('home', true); }
+SCREENS.home = { group:'home', label:'Home · The Sideline', html: () => {
+  const q = snapQueue();
+  const i = Math.min(S.snapIdx||0, q.length - 1);
+  const s = q[i];
+  const nxt = [q[(i+1) % q.length], q[(i+2) % q.length]].filter((x,j) => q.length > j+1);
+  return '<div class="stadium"><span class="kick">WEEK 13 · RIVALRY SATURDAY</span>' +
+    '<h2>THE GAME<br>IS TODAY</h2>' +
+    '<div class="sub">Ohio State vs Michigan · noon shadows at the Shoe · 🔥 week ' + S.streak + ' of your season streak</div></div>'
+  + '<div class="dots">' + q.map((_,j) => '<i class="' + (j===i?'on':'') + '"></i>').join('') + '</div>'
+  + '<div class="snap enter"><div class="k">' + s.k + '</div><h3>' + s.t + '</h3><p>' + s.p + '</p>' +
+    '<div class="acts">' +
+    '<button class="btn inline gold" style="flex:1.6" onclick="' + (s.act ? s.act : 'go(\'' + s.go + '\')') + '">' + s.cta + '</button>' +
+    (q.length > 1 ? '<button class="btn inline ghost" style="flex:1" onclick="snapSkip()">LATER</button>' : '') +
+    '</div></div>'
+  + (nxt.length ? '<div class="upnext">' + nxt.map((n2,j) =>
+      '<div class="un" onclick="snapJump(' + ((i+1+j) % q.length) + ')"><div class="l">UP NEXT</div><div class="t">' + n2.t + '</div></div>').join('') + '</div>' : '')
+  + card({cls:'tap field', k:'LIVE FROM THE SHOE', kc:'gold', go:'matchday',
+      t:'OSU 21 – MICH 17 · Q3', p:'41,208 of the faithful are in the room, and it’s getting loud.'})
+  + '<div class="ticker"><span><b>BOTTOM LINE</b> · CFP reveal tonight 7:00 ET — your dynasty’s reveal mirrors it · <b>#3 UGA 24, AUB 20 — FINAL</b> · Portal buzz: 5★ QB Morrow "exploring options" · Chapter war: #214 leads Go Blue #77 by 422 · <b>TEX 31, OU 21 — Q4</b> · Your streak is safe through Sunday night</span></div>';
 }};
 
 /* ---------- DYNASTY HUB ---------- */
@@ -631,17 +717,17 @@ SCREENS.dynasty = { group:'dynasty', label:'Dynasty · Hub', html: () =>
   + card({cls:'tap', go:'recruiting', k:'RECRUITING HUB', t:'12 on board · ' + S.hours + ' hrs left', p:'Board, offers, visits, hours — the whole weekly loop.'})
   + card({cls:'tap', go:'portal', k:'TRANSFER PORTAL', t:'34 targets tracked', p:'Windows, dealbreakers, portal alerts.'})
   + card({cls:'tap', go:'depth', k:'DEPTH CHART', t:'2 position battles flagged', p:'Fix your two-deep without booting the console.'})
-  + card({cls:'tap', go:'league', k:'ONLINE LEAGUE', t:'Big Ten Boys · 9 of 12 ready', p:'Ready status, chat, commissioner tools.'})
+  + card({cls:'tap', go:'league', k:'ONLINE LEAGUE', t:'Big Ten Boys · 9 of 12 ready', p:'See who’s holding up the week — and the power to fix it.'})
   + card({cls:'tap', go:'history', k:'PROGRAM HISTORY', t:'Records, trophies & 30-year timeline', p:'The memory the console forgets — kept forever here.'})
 };
 
 /* ---------- RECRUITING ---------- */
 const RECRUITS = [
-  { id:'vaux', pos:'QB', name:'Marcus Vaux', st:5, meta:'TX · Gunslinger · #1 at pos', pct:85, lead:'Visit ready', c:'green' },
-  { id:'col', pos:'EDGE', name:'Dre Colston', st:4, meta:'OH · Speed rusher', pct:62, lead:'You lead', c:'green' },
-  { id:'whit', pos:'WR', name:'Tay Whitfield', st:4, meta:'GA · Deep threat', pct:44, lead:'Bama leads', c:'red' },
-  { id:'brek', pos:'OT', name:'Sam Brekke', st:4, meta:'WI · Pass protect', pct:51, lead:'Close race', c:'' },
-  { id:'marsh', pos:'CB', name:'J.J. Marsh', st:3, meta:'FL · Zone corner', pct:70, lead:'You lead', c:'green' },
+  { id:'vaux', pos:'QB', name:'Marcus Vaux', st:5, meta:'TX · Gunslinger · #1 at pos', pct:85, lead:'Wants the visit', c:'green' },
+  { id:'col', pos:'EDGE', name:'Dre Colston', st:4, meta:'OH · Speed rusher', pct:62, lead:'You’re ahead — stay loud', c:'green' },
+  { id:'whit', pos:'WR', name:'Tay Whitfield', st:4, meta:'GA · Deep threat', pct:44, lead:'Bama’s ahead. Answer.', c:'red' },
+  { id:'brek', pos:'OT', name:'Sam Brekke', st:4, meta:'WI · Pass protect', pct:51, lead:'Dead heat', c:'' },
+  { id:'marsh', pos:'CB', name:'J.J. Marsh', st:3, meta:'FL · Zone corner', pct:70, lead:'Yours to lose', c:'green' },
 ];
 SCREENS.recruiting = { group:'dynasty', label:'Dynasty · Recruiting Hub', html: () =>
   subhdr('dynasty','Recruiting Hub','Week 13 · Class of 2031')
@@ -708,8 +794,8 @@ SCREENS.league = { group:'dynasty', label:'Dynasty · League Hub', html: () =>
   + card({cls:'hi', k:'ADVANCE STATUS', kc:'green', t:(S.ready?'10':'9') + ' of 12 ready',
       body:'<div style="margin-top:8px">' + bar((S.ready?10:9)/12*100,'green') + '</div>'})
   + [['Arun · Ohio St', S.ready?'READY':'RECRUITING', S.ready?'green':'gold','A','var(--team)', ''],
-     ['Dev · Michigan','RECRUITING · 4 HRS LEFT','gold','D','#1B4B8F','NUDGE'],
-     ['Cole · Penn St','NOT STARTED','red','C','#20488A','NUDGE'],
+     ['Dev · Michigan','ON THE PHONES · 4 HRS LEFT','gold','D','#1B4B8F','NUDGE'],
+     ['Cole · Penn St','HASN’T OPENED THE PLAYBOOK','red','C','#20488A','NUDGE'],
      ['Mike · Iowa','AWAY UNTIL SUN','red','M','#8a7a20','ACT FOR']].map(m =>
      '<div class="card"><div class="rowi" style="border:none;padding:2px 0">' + av(m[3],m[4]) +
      '<div class="grow"><div class="t">' + m[0] + '</div><div class="s" style="color:var(--' + m[2] + ');font-weight:700">' + m[1] + '</div></div>' +
@@ -1008,6 +1094,7 @@ function render(id){
   let el = document.getElementById('sc-' + id);
   if (!el){ el = document.createElement('section'); el.className = 'screen'; el.id = 'sc-' + id; host.appendChild(el); }
   const sc = SCREENS[id];
+  el.dataset.g = sc.group;
   const need = (id === 'home' || id === 'settings') ? 0
     : (sc.group === 'dynasty' || sc.group === 'cut') ? 2
     : (sc.group === 'social' || sc.group === 'you') ? 1 : 0;
