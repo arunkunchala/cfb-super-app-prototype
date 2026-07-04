@@ -264,6 +264,13 @@ body::before{content:"";position:fixed;inset:0;
 canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
 .celebrate .btn{margin-top:22px;z-index:82}
 
+/* quick sync bar */
+.syncbar{position:absolute;left:14px;right:14px;bottom:92px;z-index:48;display:flex;align-items:center;gap:9px;
+  background:linear-gradient(90deg,#1F1A08,#171303);border:1px solid var(--gold);padding:11px 15px;cursor:pointer;
+  transform:skewX(-4deg);box-shadow:0 6px 22px rgba(0,0,0,.6), 0 0 22px -6px rgba(245,180,0,.45)}
+.syncbar b{font-family:var(--score);font-size:11px;letter-spacing:1px;color:var(--gold)}
+.syncbar span{font-family:var(--score);font-size:11px;color:var(--gold2)}
+
 /* misc */
 .sec{display:inline-block;font-family:var(--score);font-size:10.5px;font-weight:700;letter-spacing:2.5px;color:#fff;text-transform:uppercase;
   margin:12px 18px 8px;padding:5px 15px;background:var(--grad-team);transform:skewX(-8deg);box-shadow:2px 2px 0 rgba(0,0,0,.45)}
@@ -299,6 +306,7 @@ canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
   .livepill{top:calc(env(safe-area-inset-top, 0px) + 10px)}
   .composer{bottom:calc(88px + env(safe-area-inset-bottom, 0px))}
   .toast{bottom:calc(104px + env(safe-area-inset-bottom, 0px))}
+  .syncbar{bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
   .hero h2{font-size:clamp(30px, 10.5vw, 44px)}
   .celebrate h2{font-size:clamp(24px, 8.5vw, 34px)}
   .stat3 .v{font-size:clamp(20px, 7vw, 28px)}
@@ -307,7 +315,6 @@ canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
 @media (min-width:769px) and (max-width:1100px){
   .side{width:200px}
 }
-/* large phones / small tablets portrait: cap content width for readability */
 @media (pointer:coarse) and (min-width:520px) and (max-width:768px){
   #screens .screen>*, .tabbar{max-width:520px;margin-left:auto;margin-right:auto}
 }
@@ -331,6 +338,7 @@ canvas#confetti{position:absolute;inset:0;z-index:81;pointer-events:none}
     </div>
     <div id="screens"><!--SCREENS--></div>
     <div class="tabbar" id="tabbar"></div>
+    <div class="syncbar" id="syncbar" onclick="quickSync()" style="display:none"></div>
     <div class="toast" id="toast"></div>
     <div class="sheet-mask" id="sheetMask" onclick="closeSheet()"></div>
     <div class="sheet" id="sheet"></div>
@@ -351,7 +359,18 @@ const S = {
   picks: {}, pickCount: 6, poll: null, bid: 47500, outbid: true,
   checkedIn: false, gamesAttended: 47, wl: '33–14',
   giftsSent: {}, ready: false, theme: 'osu',
+  /* access model */
+  tier: 2,            // 0 = open, 1 = EA account, 2 = owns game
+  persona: 'ps5',     // active persona; entitlement is per persona
+  presence: false,    // console session live → Live Companion Mode
+  drafts: 0, draftAreas: [], lastSync: null, lockerN: 12,
 };
+const PERSONAS = {
+  ps5: { label:'PS5 · Coach Arun', badge:'PS5', owns:true,  snap:'Dynasty S4 W13 · CUT 89 OVR · 2 leagues' },
+  pc:  { label:'PC · Coach Arun',  badge:'PC',  owns:false, snap:'No game on this platform — Tier 1 seat' },
+};
+/* effective tier for game-state features = account tier capped by persona entitlement */
+function mTier(){ return PERSONAS[S.persona].owns ? S.tier : Math.min(S.tier, 1); }
 const THEMES = {
   osu:   { name:'Ohio State',  abbr:'OSU', team:'#C9302C', dk:'#8E1F1C', t2:'#B0B7C3', on:'#FFFFFF' },
   mich:  { name:'Michigan',    abbr:'MICH',team:'#1B4B8F', dk:'#00274C', t2:'#FFCB05', on:'#FFFFFF' },
@@ -395,6 +414,66 @@ function card(opts){
     (opts.go ? '<div class="arrow">›</div>' : '') + '</div>';
 }
 
+/* ---------- access-model helpers ---------- */
+function personaChip(){
+  const p = PERSONAS[S.persona];
+  return '<span class="chip" style="margin-top:10px" onclick="openPersonas()">🎮 ' + p.badge + ' · ' +
+    (p.owns ? 'ENTITLED' : 'NO GAME') + ' ▾</span>';
+}
+function liveBanner(){
+  if (!S.presence) return '';
+  return '<div class="card field" style="padding:11px 14px"><div class="k gold">LIVE COMPANION MODE</div>' +
+    '<p style="margin-top:4px;color:#D9F2E4">Your PS5 session is live. Edits stage as drafts — Quick Sync applies them between plays. Non-urgent alerts muted.</p></div>';
+}
+function gateScreen(id, need){
+  const sc = SCREENS[id];
+  const head = subhdr('home', sc.label.split('·').pop().trim(), need === 1 ? 'Free with an EA account' : 'Connects to your game');
+  if (need === 1) return head +
+    card({cls:'hi', k:'SIGN IN TO JOIN THE FANBASE', kc:'gold', t:'This is the fan layer — free, no game required',
+      p:'Team flair, check-ins, your Fan Ledger, chapters, pick’em, streaks and the Fan Pass free track. One EA ID, everywhere.'}) +
+    '<button class="btn gold" onclick="setTier(1)">SIGN IN WITH EA ID · FREE</button>' +
+    card({k:'WHY IT\'S OPEN', p:'Identity and community are never paywalled. Only features that touch game state need the game.'});
+  const spectate = id === 'league'
+    ? card({k:'SPECTATE MODE 👁', kc:'gold', t:'Big Ten Boys · 9 of 12 ready', p:'You can watch Dev\'s league live — ready status, standings, the drama. Acting in it needs the game.'})
+    : id === 'market'
+    ? card({k:'SPECTATE MODE 👁', kc:'gold', t:'CUT price trends · view only', p:'96 OVR QBs ▼18% this week. Watch the market move; bidding needs the game on this persona.'})
+    : card({k:'PREVIEW 👁', kc:'gold', t:'Watch-only until this persona owns CFB 28', p:'Everything here reads and writes real game state — recruiting boards, depth charts, live auctions.'});
+  return head + spectate +
+    card({cls:'hi', k:'YOUR LOCKER IS FILLING', kc:'team', t: S.lockerN + ' earned items are waiting in CFB 28',
+      p:'Check-in drops, chapter war prizes, pick’em rewards — banked, never lost. They unlock in-game the moment you own it.'}) +
+    '<button class="btn" onclick="setTier(2)">START EA PLAY TRIAL · PLAYS IN MINUTES</button>' +
+    '<button class="btn gold" onclick="setTier(2);toast(\'Webstore ↗ · Locker opens on first launch\')">BUY CFB 28 · OPENS YOUR LOCKER (' + S.lockerN + ')</button>' +
+    card({k:'THE LEGIBLE GATE RULE', p:'Own CFB 28 on this persona → this tab lights up. No hidden checks, no silent failures — the condition is always on the button.'});
+}
+function setTier(n){ S.tier = n; toast(n === 1 ? 'Signed in — welcome to the fanbase' : n === 2 ? 'Entitlement verified ✓ — everything lights up' : 'Signed out'); go(cur, true); }
+function markDraft(area){
+  S.drafts++; if (!S.draftAreas.includes(area)) S.draftAreas.push(area);
+  updateSyncbar(); toast('Staged as draft — Quick Sync when ready');
+}
+function quickSync(){
+  if (!S.drafts) return;
+  const n = S.drafts, t = new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  S.drafts = 0; S.draftAreas = []; S.lastSync = t; updateSyncbar();
+  celeb('🔄','SYNCED TO YOUR PS5', n + ' change' + (n>1?'s':'') + ' applied as one atomic batch · ' + t + '. Your console menus just refreshed.');
+}
+function updateSyncbar(){
+  const el = document.getElementById('syncbar');
+  if (!S.drafts){ el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  el.innerHTML = '<span class="pulse" style="width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pul 1.2s infinite"></span>' +
+    '<b>' + S.drafts + ' UNSYNCED · ' + S.draftAreas.join(' + ').toUpperCase() + '</b><span style="margin-left:auto;font-weight:800">QUICK SYNC ⟶</span>';
+}
+function openPersonas(){
+  openSheet('<div class="sec" style="padding:0 0 8px;margin:0 0 8px">WHICH COACH ARE YOU TODAY?</div>' +
+    Object.entries(PERSONAS).map(([k,p]) =>
+    '<div class="card' + (S.persona===k?' hi':'') + '" style="margin:0 0 10px;cursor:pointer" onclick="setPersona(\'' + k + '\')">' +
+    '<div class="k ' + (p.owns?'green':'') + '">' + p.badge + ' · ' + (p.owns ? 'CFB 28 ENTITLED' : 'NO GAME — TIER 1') + (S.persona===k?' · ACTIVE':'') + '</div>' +
+    '<h3>' + p.label + '</h3><p>' + p.snap + '</p></div>').join('') +
+    '<p style="font-size:10.5px;color:var(--mut)">Fan layer (ledger, chapters, streaks) follows your account everywhere. Game state follows the persona.</p>');
+}
+function setPersona(k){ S.persona = k; closeSheet(); toast('Active persona: ' + PERSONAS[k].label); go(cur, true); }
+function togglePresence(){ S.presence = !S.presence; toast(S.presence ? 'PS5 session detected — Live Companion Mode' : 'Console session ended'); go(cur, true); }
+
 /* ================= SCREENS ================= */
 const SCREENS = {};
 const G = { home:'home', dynasty:'dynasty', cut:'cut', social:'social', you:'you' };
@@ -425,7 +504,8 @@ SCREENS.home = { group:'home', label:'Home · Action Feed', html: () => {
 
 /* ---------- DYNASTY HUB ---------- */
 SCREENS.dynasty = { group:'dynasty', label:'Dynasty · Hub', html: () =>
-  hub('DYNASTY · SEASON 4 · WEEK 13', 'YOUR PROGRAM', 'Ohio State · 11–0 · #2 CFP · Coach Lv 47')
+  hub('DYNASTY · SEASON 4 · WEEK 13', 'YOUR PROGRAM', 'Ohio State · 11–0 · #2 CFP · Coach Lv 47' + '<br>' + personaChip())
+  + liveBanner()
   + '<div class="stat3"><div class="st"><div class="v">11–0</div><div class="l">Record</div></div>' +
     '<div class="st"><div class="v">#2</div><div class="l">CFP Rank</div></div>' +
     '<div class="st"><div class="v">#1</div><div class="l">Class of ’31</div></div></div>'
@@ -494,16 +574,17 @@ SCREENS.portal = { group:'dynasty', label:'Dynasty · Transfer Portal', html: ()
 SCREENS.depth = { group:'dynasty', label:'Dynasty · Depth Chart', html: () =>
   subhdr('dynasty','Depth Chart','2 battles flagged · legible at last')
   + '<div class="chiprow"><span class="chip on">OFFENSE</span><span class="chip">DEFENSE</span><span class="chip">SPECIAL</span></div>'
-  + card({k:'FLAGGED · RB1 BATTLE', kc:'red', body:
+  + liveBanner()
+  + card({k: S.presence ? 'RB1 BATTLE · 🔒 SECTION LEASED — OPEN ON PS5' : 'FLAGGED · RB1 BATTLE', kc: S.presence ? 'gold' : 'red', body:
       '<div class="rowi">' + av('26','var(--team)') + '<div class="grow"><div class="t">J. Carter · 88 OVR</div><div class="s">Fresh legs · 92% wear</div></div><span class="flag" style="background:rgba(47,191,113,.15);color:var(--green)">START</span></div>' +
       '<div class="rowi">' + av('7','var(--surface2)') + '<div class="grow"><div class="t">M. Bell · 87 OVR</div><div class="s">Shoulder · 71% wear</div></div>' +
-      '<button class="btn ghost inline" onclick="toast(\'Swapped — syncs to console\')">SWAP</button></div>'})
+      (S.presence ? '<span class="chip">READ-ONLY</span>' : '<button class="btn ghost inline" onclick="markDraft(\'Depth chart\')">SWAP</button>') + '</div>'})
   + card({k:'QB', body:'<div class="rowi">' + av('12','var(--team)') + '<div class="grow"><div class="t">R. Osei · 91 OVR</div><div class="s">QB1 · locked</div></div></div>' +
       '<div class="rowi">' + av('4','var(--surface2)') + '<div class="grow"><div class="t">T. Fine · 79 OVR</div><div class="s">QB2</div></div></div>'})
   + card({k:'WR — FLAGGED: WR3 EMPTY', kc:'red', body:
       '<div class="rowi">' + av('1','var(--team)') + '<div class="grow"><div class="t">K. Dawson · 89</div><div class="s">X · WR1</div></div></div>' +
       '<div class="rowi">' + av('83','var(--surface2)') + '<div class="grow"><div class="t">Assign WR3</div><div class="s">Eligible: 4 players</div></div>' +
-      '<button class="btn inline" onclick="toast(\'B. Knox set at WR3\')">AUTO-FIX</button></div>'})
+      '<button class="btn inline" onclick="markDraft(\'Depth chart\')">AUTO-FIX</button></div>'})
 };
 SCREENS.league = { group:'dynasty', label:'Dynasty · League Hub', html: () =>
   subhdr('dynasty','Big Ten Boys','Online Dynasty · 12 users · S4 W13')
@@ -538,7 +619,8 @@ SCREENS.history = { group:'dynasty', label:'Dynasty · Program History', html: (
 };
 /* ---------- CUT HUB ---------- */
 SCREENS.cut = { group:'cut', label:'CUT · Hub', html: () =>
-  hub('COLLEGE ULTIMATE TEAM', 'CUT HQ', 'Coins ' + S.coins.toLocaleString() + ' · Trophies ' + S.points.toLocaleString() + ' · OVR 89')
+  hub('COLLEGE ULTIMATE TEAM', 'CUT HQ', 'Coins ' + S.coins.toLocaleString() + ' · Trophies ' + S.points.toLocaleString() + ' · OVR 89' + '<br>' + personaChip())
+  + liveBanner()
   + card({cls:'hi tap', go:'cardd', k: S.outbid ? 'AUCTION · YOU\'VE BEEN OUTBID' : 'AUCTION · YOU LEAD', kc:'red',
       t:'94 OVR J. Smith · EDGE · Rivalry Series', body:'<p style="margin-top:4px">Ends in <span class="timer hot" data-t="764">12:44</span> — one tap to rebid.</p>'})
   + card({cls:'tap', go:'market', k:'MARKET', t:'Auction house & price trends', p:'Watch, bid, snipe, list — with buy-window signals.'})
@@ -587,7 +669,7 @@ SCREENS.lineup = { group:'cut', label:'CUT · My Team', html: () =>
   + card({k:'STARTING LINEUP · TAP TO EDIT', body:
       ['QB · C. Hale · 96','HB · J. Carter · 91','WR · K. Dawson · 92','EDGE · J. Smith · 94 (pending bid)','CB · M. Okafor · 89'].map(x =>
       '<div class="checkrow"><div class="ck done">✓</div>' + x + '</div>').join('')})
-  + card({k:'BENCH ALERT', kc:'red', t:'2 uncontested upgrades on your bench', p:'Auto-optimize swaps them in — you approve each move.', body:'<button class="btn inline gold" style="margin-top:8px" onclick="toast(\'Lineup optimized +1 OVR\')">AUTO-OPTIMIZE</button>'})
+  + card({k:'BENCH ALERT', kc:'red', t:'2 uncontested upgrades on your bench', p:'Auto-optimize swaps them in — you approve each move.', body:'<button class="btn inline gold" style="margin-top:8px" onclick="markDraft(\'Lineup\')">AUTO-OPTIMIZE</button>'})
 };
 SCREENS.sets = { group:'cut', label:'CUT · Sets (live checklist)', html: () =>
   subhdr('cut','Rivalry Week Set','Reward: 93 OVR Rivalry J. Marsh')
@@ -688,6 +770,7 @@ SCREENS.you = { group:'you', label:'You · Profile Hub', html: () =>
   + card({cls:'tap', go:'collection', k:'CAMPUS COLLECTION', t:'14 of 63 · 2 claimable nearby', p:'Location-locked memorabilia. Rivalry-game grails this week only.'})
   + card({cls:'tap', go:'trophy', k:'TROPHY CASE', t:'Game + real world, one shelf', p:'Nattys next to attendance streaks next to 96 OVR pulls.'})
   + card({cls:'tap', go:'wrapped', k:'DYNASTY WRAPPED · READY', kc:'gold', t:'Season 4 story is minted', p:'Tap to watch & share your season.'})
+  + card({cls:'tap', go:'locker', k:'THE LOCKER', kc:'gold', t: mTier() >= 2 ? 'All earned rewards delivered ✓' : S.lockerN + ' items banked for CFB 28', p: mTier() >= 2 ? 'Everything you earn lands in-game within minutes.' : 'Everything you earn as a fan waits in-game. Nothing is ever lost.'})
   + card({cls:'tap', go:'store', k:'WALLET & STORE', t:'182,400 coins · 3,120 trophies · $12.50', p:'One balance across everything. Webstore bonus active.'})
   + card({cls:'tap', go:'settings', k:'SETTINGS', t:'Team theme, alerts, privacy', p:'Currently themed: ' + THEMES[S.theme].name + '.'})
 };
@@ -759,6 +842,20 @@ SCREENS.store = { group:'you', label:'You · Wallet & Store', html: () =>
       body:'<button class="btn ghost inline" style="margin-top:8px" onclick="toast(\'Gift sent to Dev 🎁 announced in chapter\')">GIFT</button>'})
   + card({k:'LOYALTY', t:'Buckeye Points · Lv 3', body:'<div style="margin-top:8px">' + bar(45,'team') + '</div><p style="margin-top:5px">Earn on every lane — IAP, webstore, even check-ins.</p>'})
 };
+SCREENS.locker = { group:'you', label:'You · The Locker (banked rewards)', html: () =>
+  subhdr('you','The Locker', mTier() >= 2 ? 'Delivering to ' + PERSONAS[S.persona].badge : 'Banked until you own CFB 28')
+  + (mTier() >= 2
+    ? card({cls:'hi', k:'ENTITLED · DELIVERY ACTIVE', kc:'green', t:'Earned rewards land in-game automatically', p:'Delivered to your ' + PERSONAS[S.persona].badge + ' persona\'s inbox within minutes of earning.'})
+    : card({cls:'hi', k:'FILLING SINCE AUGUST', kc:'gold', t: S.lockerN + ' items waiting inside CFB 28', p:'Buy any edition on any platform and the Locker opens on first launch. You choose which persona receives it.'}))
+  + card({k:'WHAT\'S INSIDE', body:
+      [['🎁','Rivalry Pack ×3','chapter war prizes'],['🃏','92 OVR Rivalry J. Marsh','pick’em season reward'],
+       ['🏟️','The Shoe — Gold uniform drop','stadium check-in'],['⚡','Recruiting boost ×2','campus pilgrimage'],
+       ['🔥','Streak Shield','9-week streak milestone']].map(r =>
+      '<div class="rowi">' + av(r[0],'var(--surface2)') + '<div class="grow"><div class="t">' + r[1] + '</div><div class="s">' + r[2] + '</div></div>' +
+      '<span class="flag" style="background:' + (mTier()>=2 ? 'rgba(47,191,113,.15);color:var(--green)' : 'rgba(245,180,0,.13);color:var(--gold)') + '">' + (mTier()>=2 ? 'SENT' : 'BANKED') + '</span></div>').join('')})
+  + (mTier() >= 2 ? '' : '<button class="btn gold" onclick="setTier(2);toast(\'Webstore ↗ · Locker opens on first launch\')">BUY CFB 28 · UNLOCK ALL ' + S.lockerN + '</button>')
+  + card({k:'THE PROMISE', p:'Earned is earned. A gate can only ever move down — nothing you earn free is ever taken back.'})
+};
 SCREENS.settings = { group:'you', label:'You · Settings / Team Theme', html: () =>
   subhdr('you','Settings','Theme, alerts, account')
   + '<div class="sec">TEAM THEME — THE WHOLE APP RETHEMES</div>'
@@ -767,6 +864,17 @@ SCREENS.settings = { group:'you', label:'You · Settings / Team Theme', html: ()
       '<div class="chip' + (S.theme===k?' on':'') + '" style="padding:9px 14px" onclick="setTheme(\'' + k + '\')">' +
       '<span class="dot" style="background:' + t.team + '"></span>' + t.name + '</div>').join('') +
     '</div><p style="margin-top:9px">60-30-10 theming: dark surface stays, your colors take over accents, headers, chips and glows. Multi-team fans can pin a second team.</p></div>'
+  + '<div class="sec">ACCESS MODEL — DEMO CONTROLS</div>'
+  + '<div class="card"><div class="k gold">SIMULATE ACCESS TIER</div><div style="display:flex;gap:9px;margin-top:9px">' +
+      [['0','T0 · OPEN'],['1','T1 · EA LOGIN'],['2','T2 · OWNS GAME']].map(t =>
+      '<span class="chip' + (S.tier === +t[0] ? ' on' : '') + '" onclick="setTier(' + t[0] + ')">' + t[1] + '</span>').join('') +
+      '</div><p style="margin-top:9px">Flip tiers to see the gates: T0 locks everything social behind EA sign-in; T1 shows spectate/preview + the Locker on game features; T2 lights it all up.</p></div>'
+  + '<div class="card"><div class="k gold">ACTIVE PERSONA</div><div style="margin-top:9px">' + personaChip() + '</div>' +
+      '<p style="margin-top:9px">Entitlement is per persona — switch to the PC seat (no game) and the Manage tabs drop to spectate even at T2.</p></div>'
+  + '<div class="card"><div class="k gold">CONSOLE PRESENCE</div>' +
+      '<button class="btn ghost inline" style="margin-top:9px" onclick="togglePresence()">' +
+      (S.presence ? '🎮 SESSION LIVE — END IT' : '🎮 SIMULATE PS5 SESSION') + '</button>' +
+      '<p style="margin-top:9px">With a session live: Dynasty/CUT show Live Companion Mode, the depth chart gets a section lease (read-only where the console is editing), and drafts sync between plays.</p></div>'
   + card({k:'NOTIFICATIONS', body:
       ['Outbid alerts · instant','Recruit lead changes','League advance / nudges','Matchday room opens','Chapter gift requests','Collection drops nearby'].map((x,i) =>
       '<div class="checkrow"><div class="ck done">✓</div>' + x + '</div>').join('')})
@@ -782,7 +890,12 @@ function render(id){
   const host = document.getElementById('screens');
   let el = document.getElementById('sc-' + id);
   if (!el){ el = document.createElement('section'); el.className = 'screen'; el.id = 'sc-' + id; host.appendChild(el); }
-  el.innerHTML = SCREENS[id].html();
+  const sc = SCREENS[id];
+  const need = (id === 'home' || id === 'settings') ? 0
+    : (sc.group === 'dynasty' || sc.group === 'cut') ? 2
+    : (sc.group === 'social' || sc.group === 'you') ? 1 : 0;
+  const have = need === 2 ? mTier() : S.tier;
+  el.innerHTML = (have < need) ? gateScreen(id, have < 1 ? 1 : 2) : sc.html();
 }
 function go(id, isBack){
   if (!SCREENS[id]) return;
@@ -826,7 +939,7 @@ function hrs(d){
   document.getElementById('vhours').textContent = S.vauxHours;
   document.getElementById('vpool').textContent = S.hours;
 }
-function scheduleVisit(btn){ document.getElementById('visitCk').classList.add('done'); document.getElementById('visitCk').textContent = '✓'; btn.textContent = 'VISIT LOCKED · SAT ✓'; btn.disabled = true; toast('Official visit set — +15% swing pending'); }
+function scheduleVisit(btn){ document.getElementById('visitCk').classList.add('done'); document.getElementById('visitCk').textContent = '✓'; btn.textContent = 'VISIT STAGED · SAT ✓'; btn.disabled = true; markDraft('Recruiting'); }
 function rebid(){
   if (!S.outbid) return;
   S.bid += 1000; S.outbid = false;
